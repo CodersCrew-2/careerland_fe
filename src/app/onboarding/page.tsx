@@ -92,13 +92,15 @@ function OnboardingFlow() {
     return (
         <div className="min-h-screen w-full relative overflow-hidden flex items-center justify-center"
             style={{ background: '#ffffff' }}>
-            {/* Subtle blue blobs */}
-            <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)', filter: 'blur(80px)' }} />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(14,165,233,0.07) 0%, transparent 70%)', filter: 'blur(80px)' }} />
-            <div className="absolute top-[35%] left-[25%] w-[400px] h-[400px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)', filter: 'blur(100px)' }} />
+            {/* 4-corner blur blobs */}
+            <div className="absolute top-[-8%] left-[-8%] w-[420px] h-[420px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.13) 0%, transparent 70%)', filter: 'blur(72px)' }} />
+            <div className="absolute top-[-8%] right-[-8%] w-[420px] h-[420px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(34,168,224,0.12) 0%, transparent 70%)', filter: 'blur(72px)' }} />
+            <div className="absolute bottom-[-8%] left-[-8%] w-[420px] h-[420px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.11) 0%, transparent 70%)', filter: 'blur(72px)' }} />
+            <div className="absolute bottom-[-8%] right-[-8%] w-[420px] h-[420px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(56,195,245,0.10) 0%, transparent 70%)', filter: 'blur(72px)' }} />
 
             <AnimatePresence mode="wait">
                 {phase === 'welcome' && (
@@ -159,64 +161,73 @@ function WelcomePhase({ userName, onContinue, loadingQ }: { userName?: string; o
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="z-10 w-full min-h-screen flex flex-col items-center justify-center px-6 lg:px-16 py-10">
 
-            {/* ── Speech bubble with bottom-left tail (ABOVE mascot) ── */}
-            <div className="relative max-w-md w-full mb-1">
+            {/* ── Speech bubble ABOVE mascot ── */}
+            {/* drop-shadow on outer wrapper applies to the whole shape incl. tail */}
+            <div className="max-w-md w-full"
+                style={{ filter: 'drop-shadow(0 6px 18px rgba(99,102,241,0.13)) drop-shadow(0 1px 4px rgba(0,0,0,0.07))' }}>
 
-                {/* Bubble body */}
                 <motion.div
                     initial={{ opacity: 0, y: -10, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 22, delay: 0.2 }}
-                    className="relative rounded-3xl px-7 py-6 space-y-3 min-h-[150px]"
                     style={{
+                        position: 'relative',
                         background: '#ffffff',
-                        boxShadow: '0 4px 32px rgba(99,102,241,0.10), 0 1px 8px rgba(0,0,0,0.06)',
-                        border: '1.5px solid #e2e8f0',
+                        border: '1.5px solid #e8edf3',
+                        borderRadius: 24,
+                        padding: '24px 28px',
+                        overflow: 'visible',   /* let tail poke out */
                     }}>
-                    {messages.map(({ text, bold }, i) => (
-                        <AnimatePresence key={i}>
-                            {visibleLines > i && (
-                                <motion.p
-                                    initial={{ opacity: 0, filter: 'blur(8px)', y: 6 }}
-                                    animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-                                    transition={{ duration: 0.55, ease: 'easeOut' }}
-                                    className={bold
-                                        ? 'text-[17px] font-bold text-slate-800 leading-snug'
-                                        : 'text-[14px] text-slate-500 leading-relaxed'
-                                    }>
-                                    {text}
-                                </motion.p>
+
+                    {/* Messages */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 150 }}>
+                        {messages.map(({ text, bold }, i) => (
+                            <AnimatePresence key={i}>
+                                {visibleLines > i && (
+                                    <motion.p
+                                        initial={{ opacity: 0, filter: 'blur(8px)', y: 6 }}
+                                        animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+                                        transition={{ duration: 0.55, ease: 'easeOut' }}
+                                        style={{
+                                            margin: 0,
+                                            fontSize: bold ? 17 : 14,
+                                            fontWeight: bold ? 700 : 400,
+                                            color: bold ? '#1e293b' : '#64748b',
+                                            lineHeight: 1.55,
+                                        }}>
+                                        {text}
+                                    </motion.p>
+                                )}
+                            </AnimatePresence>
+                        ))}
+
+                        {/* Typing dots */}
+                        <AnimatePresence>
+                            {visibleLines < messages.length && visibleLines > 0 && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                    style={{ display: 'flex', gap: 5, paddingTop: 4 }}>
+                                    {[0, 1, 2].map(i => (
+                                        <div key={i} className="animate-bounce"
+                                            style={{ width: 8, height: 8, borderRadius: '50%', background: '#cbd5e1', animationDelay: `${i * 0.18}s` }} />
+                                    ))}
+                                </motion.div>
                             )}
                         </AnimatePresence>
-                    ))}
+                    </div>
 
-                    {/* Typing dots */}
-                    <AnimatePresence>
-                        {visibleLines < messages.length && visibleLines > 0 && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                className="flex gap-1 pt-1">
-                                {[0, 1, 2].map(i => (
-                                    <div key={i} className="rounded-full bg-slate-300 animate-bounce"
-                                        style={{ width: 8, height: 8, animationDelay: `${i * 0.18}s` }} />
-                                ))}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Speech bubble tail — bottom-left triangle */}
-                    {/* Shadow layer */}
+                    {/* ── Tail: rotated square, bottom-center, pokes out below ── */}
+                    {/* Only borderBottom + borderRight shown → lower two diamond edges visible */}
                     <div style={{
-                        position: 'absolute', bottom: -13, left: 28,
-                        width: 0, height: 0,
-                        borderLeft: '14px solid transparent',
-                        borderTop: '14px solid #d8dfe8',
-                    }} />
-                    {/* White fill layer on top */}
-                    <div style={{
-                        position: 'absolute', bottom: -11, left: 29,
-                        width: 0, height: 0,
-                        borderLeft: '13px solid transparent',
-                        borderTop: '13px solid #ffffff',
+                        position: 'absolute',
+                        bottom: -10,          /* half sticks out, half inside */
+                        left: '50%',
+                        marginLeft: -10,      /* center it */
+                        width: 20,
+                        height: 20,
+                        background: '#ffffff',
+                        borderRight: '1.5px solid #e8edf3',
+                        borderBottom: '1.5px solid #e8edf3',
+                        transform: 'rotate(45deg)',
                     }} />
                 </motion.div>
             </div>
@@ -226,7 +237,7 @@ function WelcomePhase({ userName, onContinue, loadingQ }: { userName?: string; o
                 initial={{ scale: 0.7, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring', stiffness: 180, damping: 18, delay: 0.1 }}
-                className="shrink-0 w-36 h-36 lg:w-44 lg:h-44">
+                className="shrink-0 w-48 h-48 lg:w-56 lg:h-56 mt-1 mb-2">
                 <BuddyVideo src={BUDDY_GIF} />
             </motion.div>
 
@@ -234,16 +245,23 @@ function WelcomePhase({ userName, onContinue, loadingQ }: { userName?: string; o
             <AnimatePresence>
                 {showBtn && (
                     <motion.button
-                        initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
+                        initial={{ opacity: 0, y: 12, filter: 'blur(6px)' }}
                         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                        transition={{ duration: 0.5 }}
+                        transition={{ duration: 0.5, ease: 'easeOut' }}
+                        whileHover={{ y: -3, scale: 1.03 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={onContinue}
                         disabled={loadingQ}
-                        className="mt-6 flex items-center gap-2.5 px-10 py-4 rounded-2xl text-[15px] font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
-                        style={{ background: 'linear-gradient(135deg, #3b82f6, #6366f1)', boxShadow: '0 8px 32px rgba(99,102,241,0.45)' }}>
+                        className="flex items-center gap-2 text-white font-semibold text-[15px] disabled:opacity-60 mt-4"
+                        style={{
+                            background: '#22a8e0',
+                            borderRadius: 100,
+                            padding: '13px 36px',
+                            letterSpacing: '0.01em',
+                        }}>
                         {loadingQ
-                            ? <><Loader2 className="w-4 h-4 animate-spin" /> Setting things up&hellip;</>
-                            : <>Let&apos;s get started <ArrowRight className="w-5 h-5" /></>}
+                            ? <><Loader2 className="w-4 h-4 animate-spin" />&nbsp;Setting things up&hellip;</>
+                            : <>Let&apos;s get started &nbsp;<ArrowRight className="w-4 h-4" /></>}
                     </motion.button>
                 )}
             </AnimatePresence>
@@ -251,12 +269,13 @@ function WelcomePhase({ userName, onContinue, loadingQ }: { userName?: string; o
     );
 }
 
-// ─── Phase 2: Questions ───────────────────────────────────────
+// ─── Phase 2: Questions ─ Duolingo-style layout ───────────────
+const THINKING_GIF = 'https://uafn22926g.ufs.sh/f/F8enbsMKbqz7wGLv60fSKh0RHXxWkbs1TyYLNaoDze9PuVpt';
+
 function QuestionsPhase({ questions, onFinish }: { questions: Question[]; onFinish: (a: Record<string, string | string[]>) => void }) {
     const [idx, setIdx] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
     const [dir, setDir] = useState<1 | -1>(1);
-    const [imgLoaded, setImgLoaded] = useState(false);
 
     const q = questions[idx];
     const isLast = idx === questions.length - 1;
@@ -264,126 +283,136 @@ function QuestionsPhase({ questions, onFinish }: { questions: Question[]; onFini
     const hasAnswer = currentVal !== undefined && currentVal !== '' && (Array.isArray(currentVal) ? currentVal.length > 0 : true);
     const progress = ((idx + 1) / questions.length) * 100;
 
-    useEffect(() => { setImgLoaded(false); }, [idx]);
-
-    const goNext = () => {
-        if (isLast) { onFinish(answers); return; }
-        setDir(1); setIdx(i => i + 1);
-    };
-    const goBack = () => {
-        if (idx === 0) return;
-        setDir(-1); setIdx(i => i - 1);
-    };
-    const skip = () => {
-        if (isLast) { onFinish(answers); return; }
-        setDir(1); setIdx(i => i + 1);
-    };
-
-    const setAnswer = (val: string | string[]) =>
-        setAnswers(prev => ({ ...prev, [q.id]: val }));
-
+    const goNext = () => { if (isLast) { onFinish(answers); return; } setDir(1); setIdx(i => i + 1); };
+    const goBack = () => { if (idx === 0) return; setDir(-1); setIdx(i => i - 1); };
+    const skip = () => { if (isLast) { onFinish(answers); return; } setDir(1); setIdx(i => i + 1); };
+    const setAnswer = (val: string | string[]) => setAnswers(prev => ({ ...prev, [q.id]: val }));
     const toggleMulti = (opt: string) => {
         const cur = (answers[q.id] as string[] | undefined) ?? [];
         setAnswer(cur.includes(opt) ? cur.filter(x => x !== opt) : [...cur, opt]);
     };
 
+    const canContinue = !q.required || hasAnswer;
+
     return (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="z-10 w-full min-h-screen flex flex-col lg:flex-row">
+            className="z-10 w-full min-h-screen flex flex-col"
+            style={{ background: '#ffffff' }}>
 
-            {/* ── LEFT: Image ── */}
-            <div className="relative lg:w-[42%] h-[35vh] lg:h-screen overflow-hidden shrink-0">
+            {/* ── Progress bar (top) ── */}
+            <div style={{ height: 7, background: '#f1f5f9' }}>
+                <motion.div
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                    style={{ height: '100%', background: '#22a8e0', borderRadius: 0 }} />
+            </div>
+
+            {/* ── Main content: centered vertically ── */}
+            <div className="flex-1 flex flex-col items-center justify-center px-8 lg:px-20 pb-24 max-w-3xl mx-auto w-full">
+
+                {/* ── Mascot + speech bubble ── */}
                 <AnimatePresence mode="wait">
                     <motion.div key={idx}
-                        initial={{ x: dir === 1 ? '100%' : '-100%' }} animate={{ x: 0 }}
-                        exit={{ x: dir === 1 ? '-35%' : '35%', opacity: 0 }}
-                        transition={{ duration: 0.38, ease: [0.32, 0, 0.67, 0] }}
-                        className="absolute inset-0">
-                        <img src={getImg(q.image_keyword)} alt={q.text}
-                            className="w-full h-full object-cover"
-                            onLoad={() => setImgLoaded(true)}
-                            style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.4s' }} />
-                        <div className="absolute inset-0 lg:hidden"
-                            style={{ background: 'linear-gradient(to top, rgba(238,242,255,0.96) 0%, transparent 50%)' }} />
-                        <div className="absolute inset-0 hidden lg:block"
-                            style={{ background: 'linear-gradient(to right, transparent 50%, rgba(238,242,255,0.98) 100%)' }} />
+                        initial={{ opacity: 0, x: dir === 1 ? 30 : -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: dir === 1 ? -30 : 30 }}
+                        transition={{ duration: 0.28, ease: 'easeOut' }}
+                        className="flex items-center gap-5 mb-7 w-full">
+
+                        {/* Mascot video */}
+                        <div className="shrink-0 w-28 h-28">
+                            <BuddyVideo src={THINKING_GIF} />
+                        </div>
+
+                        {/* Speech bubble — right of mascot, tail on LEFT */}
+                        <div style={{ filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.07))' }} className="flex-1">
+                            <div style={{
+                                position: 'relative',
+                                background: '#ffffff',
+                                border: '1.5px solid #e2e8f0',
+                                borderRadius: 20,
+                                padding: '18px 22px',
+                                overflow: 'visible',
+                            }}>
+                                <p style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', lineHeight: 1.5, margin: 0 }}>
+                                    {q.text}
+                                </p>
+                                {q.required && (
+                                    <span style={{ display: 'inline-block', marginTop: 8, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: '#ef4444', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 99, padding: '2px 10px' }}>Required</span>
+                                )}
+                                {/* Left-side tail (pointing to mascot) */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 18, left: -10,
+                                    width: 20, height: 20,
+                                    background: '#ffffff',
+                                    borderTop: '1.5px solid #e2e8f0',
+                                    borderLeft: '1.5px solid #e2e8f0',
+                                    transform: 'rotate(-45deg)',
+                                }} />
+                            </div>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+
+                {/* ── Answer options ── */}
+                <AnimatePresence mode="wait" custom={dir}>
+                    <motion.div key={`ans-${idx}`}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.22, ease: 'easeOut' }}
+                        className="w-full">
+                        <QuestionInput q={q} value={currentVal} onChange={setAnswer} toggleMulti={toggleMulti} />
                     </motion.div>
                 </AnimatePresence>
             </div>
 
-            {/* ── RIGHT: Question form ── */}
-            <div className="flex-1 flex flex-col justify-center px-6 lg:px-12 pt-6 lg:pt-0 pb-8">
-                {/* Top bar */}
-                <div className="flex items-center gap-4 mb-8">
-                    <button onClick={goBack} disabled={idx === 0}
-                        className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all disabled:opacity-30 shadow-sm shrink-0">
-                        <ArrowLeft className="w-4 h-4" />
-                    </button>
-                    <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Getting to know you</span>
-                            <span className="text-[11px] font-bold text-blue-600">{idx + 1} / {questions.length}</span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                            <motion.div className="h-full rounded-full bg-blue-500"
-                                animate={{ width: `${progress}%` }}
-                                transition={{ duration: 0.35, ease: 'easeOut' }} />
-                        </div>
+            {/* ── Bottom bar — fixed to viewport bottom ── */}
+            <div className="fixed bottom-0 left-0 right-0 z-20"
+                style={{ background: '#ffffff', borderTop: '1px solid #f1f5f9', padding: '14px 32px' }}>
+                <div className="max-w-2xl mx-auto flex items-center justify-between">
+                    {/* Back / Skip */}
+                    <div className="flex items-center gap-4">
+                        <button onClick={goBack} disabled={idx === 0}
+                            className="flex items-center gap-1 text-[12px] font-semibold text-slate-400 hover:text-slate-600 disabled:opacity-30 transition-colors">
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back
+                        </button>
+                        {!q.required && (
+                            <button onClick={skip}
+                                className="flex items-center gap-1 text-[12px] font-semibold text-slate-300 hover:text-slate-400 transition-colors">
+                                <SkipForward className="w-3.5 h-3.5" /> Skip
+                            </button>
+                        )}
                     </div>
+
+                    {/* Counter */}
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#cbd5e1', letterSpacing: '0.06em' }}>
+                        {idx + 1} / {questions.length}
+                    </span>
+
+                    {/* Continue */}
+                    <motion.button onClick={goNext}
+                        disabled={!canContinue}
+                        whileHover={canContinue ? { scale: 1.04 } : {}}
+                        whileTap={canContinue ? { scale: 0.96 } : {}}
+                        style={{
+                            background: canContinue ? '#22a8e0' : '#e2e8f0',
+                            color: canContinue ? '#ffffff' : '#94a3b8',
+                            borderRadius: 100,
+                            padding: '13px 36px',
+                            fontSize: 13,
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            textTransform: 'uppercase',
+                            cursor: canContinue ? 'pointer' : 'not-allowed',
+                            border: 'none',
+                            outline: 'none',
+                            transition: 'background 0.18s',
+                        }}>
+                        {isLast ? 'Finish ✓' : 'Continue'}
+                    </motion.button>
                 </div>
-
-                {/* Question */}
-                <AnimatePresence mode="wait" custom={dir}>
-                    <motion.div key={idx} custom={dir}
-                        initial={{ x: dir === 1 ? 40 : -40, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: dir === 1 ? -40 : 40, opacity: 0 }}
-                        transition={{ duration: 0.28, ease: [0.32, 0, 0.67, 0] }}
-                        className="space-y-6 max-w-lg">
-
-                        {/* Required pill */}
-                        <div className="flex items-center gap-2">
-                            {q.required && (
-                                <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
-                                    style={{ background: '#fef2f2', color: '#ef4444', border: '1px solid #fca5a5' }}>
-                                    Required
-                                </span>
-                            )}
-                            <span className="text-[9px] font-bold uppercase tracking-widest text-slate-300">
-                                {q.input_type.replace('_', ' ')}
-                            </span>
-                        </div>
-
-                        <h2 className="text-[22px] lg:text-[26px] font-bold text-slate-800 leading-snug">{q.text}</h2>
-
-                        {/* Input based on type */}
-                        <QuestionInput q={q} value={currentVal} onChange={setAnswer} toggleMulti={toggleMulti} />
-
-                        {/* Navigation */}
-                        <div className="flex gap-3 pt-2">
-                            {!q.required && (
-                                <button onClick={skip}
-                                    className="flex items-center gap-1.5 px-4 py-3 rounded-2xl border border-slate-200 bg-white text-[12px] font-semibold text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all">
-                                    <SkipForward className="w-3.5 h-3.5" /> Skip
-                                </button>
-                            )}
-                            <motion.button onClick={goNext}
-                                disabled={q.required && !hasAnswer}
-                                whileHover={!q.required || hasAnswer ? { scale: 1.01 } : {}}
-                                whileTap={!q.required || hasAnswer ? { scale: 0.98 } : {}}
-                                className="flex-1 py-3.5 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2 transition-all"
-                                style={{
-                                    background: (q.required && !hasAnswer) ? '#f1f5f9' : '#2563eb',
-                                    color: (q.required && !hasAnswer) ? '#94a3b8' : '#fff',
-                                    boxShadow: (q.required && !hasAnswer) ? 'none' : '0 4px 20px rgba(37,99,235,0.35)',
-                                    cursor: (q.required && !hasAnswer) ? 'not-allowed' : 'pointer',
-                                }}>
-                                {isLast ? 'Finish' : 'Next Question'}
-                                {isLast ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-                            </motion.button>
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
             </div>
         </motion.div>
     );
@@ -396,7 +425,7 @@ function QuestionInput({ q, value, onChange, toggleMulti }: {
     onChange: (v: string | string[]) => void;
     toggleMulti: (opt: string) => void;
 }) {
-    const inputBase = 'w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-[14px] text-slate-800 placeholder-slate-400 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all shadow-sm';
+    const inputBase = 'w-full bg-white border border-slate-200 rounded-2xl px-5 py-4 text-[15px] text-slate-800 placeholder-slate-400 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all shadow-sm';
 
     if (q.input_type === 'text') {
         return (
@@ -414,21 +443,32 @@ function QuestionInput({ q, value, onChange, toggleMulti }: {
 
     if (q.input_type === 'radio' && q.options) {
         return (
-            <div className="space-y-2">
-                {q.options.map(opt => {
+            <div className="space-y-3">
+                {q.options.map((opt, i) => {
                     const active = value === opt;
                     return (
                         <motion.button key={opt} onClick={() => onChange(opt)}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.06 }}
+                            whileHover={{ x: 3 }}
                             whileTap={{ scale: 0.98 }}
-                            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 text-left text-[13px] font-medium transition-all"
+                            className="w-full flex items-center gap-4 px-6 py-5 rounded-2xl text-left text-[15px] font-semibold transition-all"
                             style={{
-                                borderColor: active ? '#3b82f6' : '#e2e8f0',
-                                background: active ? '#eff6ff' : '#fff',
-                                color: active ? '#1e40af' : '#475569',
+                                background: active ? '#f0f9ff' : '#ffffff',
+                                border: `2px solid ${active ? '#22a8e0' : '#e8edf3'}`,
+                                color: active ? '#0369a1' : '#475569',
+                                boxShadow: active ? '0 2px 12px rgba(34,168,224,0.12)' : '0 1px 4px rgba(0,0,0,0.04)',
                             }}>
-                            <div className="w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-all"
-                                style={{ borderColor: active ? '#3b82f6' : '#cbd5e1', background: active ? '#3b82f6' : 'transparent' }}>
-                                {active && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            {/* Left indicator */}
+                            <div style={{
+                                width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                                border: `2px solid ${active ? '#22a8e0' : '#cbd5e1'}`,
+                                background: active ? '#22a8e0' : 'transparent',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                transition: 'all 0.18s',
+                            }}>
+                                {active && <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'white' }} />}
                             </div>
                             {opt}
                         </motion.button>
@@ -514,7 +554,7 @@ function ChoicePhase({ onChoice }: { onChoice: (path: string) => void }) {
     return (
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
-            className="z-10 flex flex-col items-center px-6 w-full max-w-lg">
+            className="z-10 flex flex-col items-center px-6 w-full max-w-lg relative">
 
             {/* GIF */}
             <motion.div initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}

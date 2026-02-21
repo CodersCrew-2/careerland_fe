@@ -5,107 +5,88 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/context/AuthContext';
 import { motion } from 'motion/react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const LOGO_URL = 'https://uafn22926g.ufs.sh/f/F8enbsMKbqz7bVtR0AczHfCIdxXY6iah1sFOJokVv4nc2Tp9';
 
-function Field({
-    label, type, value, onChange, placeholder, icon: Icon,
-}: {
-    label: string; type: string; value: string;
-    onChange: (v: string) => void; placeholder: string;
-    icon: React.ElementType;
-}) {
-    const [show, setShow] = useState(false);
-    const isPass = type === 'password';
+function GoogleIcon() {
     return (
-        <div className="space-y-1.5">
-            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-1">
-                {label}
-            </label>
-            <div className="relative">
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <Icon className="w-4 h-4 text-slate-400" />
-                </div>
-                <input
-                    type={isPass && show ? 'text' : type}
-                    value={value}
-                    onChange={e => onChange(e.target.value)}
-                    placeholder={placeholder}
-                    className="w-full pl-10 pr-10 py-3 rounded-xl bg-white border border-slate-200 text-[14px] text-slate-800 placeholder-slate-300 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
-                />
-                {isPass && (
-                    <button type="button" onClick={() => setShow(s => !s)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
-                        {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                )}
-            </div>
-        </div>
+        <svg width="18" height="18" viewBox="0 0 48 48" fill="none">
+            <path d="M47.5 24.5c0-1.6-.1-3.2-.4-4.7H24v9h13.1c-.6 3-2.3 5.5-4.9 7.2v6h7.9c4.6-4.3 7.4-10.6 7.4-17.5z" fill="#4285F4" />
+            <path d="M24 48c6.5 0 12-2.1 16-5.8l-7.9-6c-2.2 1.5-5 2.4-8.1 2.4-6.2 0-11.5-4.2-13.4-9.9H2.5v6.2C6.5 42.6 14.7 48 24 48z" fill="#34A853" />
+            <path d="M10.6 28.7A14.3 14.3 0 0 1 10.6 19.3v-6.2H2.5a23.9 23.9 0 0 0 0 21.8l8.1-6.2z" fill="#FBBC05" />
+            <path d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.7 0 6.5 5.4 2.5 13.1l8.1 6.2C12.5 13.7 17.8 9.5 24 9.5z" fill="#EA4335" />
+        </svg>
     );
 }
 
 export default function Login() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const router = useRouter();
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        login(email);
+    const handleGoogle = async () => {
+        setLoading(true);
+        await new Promise(r => setTimeout(r, 1400));
+        login('user@gmail.com');
         router.push('/dashboard');
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen relative overflow-hidden p-4"
-            style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #f8faff 50%, #e0f2fe 100%)' }}>
-            {/* Blobs */}
-            <div className="absolute top-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-            <div className="absolute bottom-[-15%] right-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(14,165,233,0.18) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4"
+            style={{ background: '#ffffff' }}>
+            {/* 4-corner blur blobs */}
+            <div className="absolute top-[-8%] left-[-8%] w-[380px] h-[380px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.13) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+            <div className="absolute top-[-8%] right-[-8%] w-[380px] h-[380px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(34,168,224,0.12) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+            <div className="absolute bottom-[-8%] left-[-8%] w-[380px] h-[380px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.11) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+            <div className="absolute bottom-[-8%] right-[-8%] w-[380px] h-[380px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(56,195,245,0.10) 0%, transparent 70%)', filter: 'blur(70px)' }} />
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-                className="w-full max-w-sm z-10">
-                <div className="rounded-3xl overflow-hidden"
-                    style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 24px 64px rgba(0,0,0,0.1)' }}>
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="z-10 w-full max-w-sm flex flex-col items-center gap-8">
 
-                    <div className="px-8 pt-8 pb-7 space-y-6">
-                        {/* Logo */}
-                        <div className="flex justify-center">
-                            <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg shadow-blue-500/15 ring-2 ring-white/60">
-                                <img src={LOGO_URL} alt="CareerLand" className="w-full h-full object-cover" />
-                            </div>
-                        </div>
-
-                        {/* Heading */}
-                        <div className="text-center space-y-1">
-                            <h1 className="text-[26px] font-bold text-slate-800">Welcome back</h1>
-                            <p className="text-[13px] text-slate-400">Sign in to continue your career journey</p>
-                        </div>
-
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <Field label="Email" type="email" value={email} onChange={setEmail}
-                                placeholder="you@example.com" icon={Mail} />
-                            <Field label="Password" type="password" value={password} onChange={setPassword}
-                                placeholder="Enter your password" icon={Lock} />
-
-                            <button type="submit"
-                                className="w-full h-12 rounded-2xl font-semibold text-white text-[14px] transition-all hover:scale-[1.01] active:scale-[0.98] mt-2"
-                                style={{ background: 'linear-gradient(135deg, #3b82f6, #6366f1)', boxShadow: '0 6px 24px rgba(99,102,241,0.35)' }}>
-                                Sign In
-                            </button>
-                        </form>
-
-                        {/* Footer */}
-                        <p className="text-center text-[13px] text-slate-400">
-                            Don&apos;t have an account?{' '}
-                            <Link href="/signup" className="text-blue-600 font-semibold hover:underline">Sign up</Link>
-                        </p>
+                {/* Logo + wordmark */}
+                <div className="flex flex-col items-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-sm"
+                        style={{ border: '1px solid #e2e8f0' }}>
+                        <img src={LOGO_URL} alt="CareerLand" className="w-full h-full object-cover" />
                     </div>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', letterSpacing: '-0.01em' }}>CareerLand</span>
                 </div>
+
+                {/* Card */}
+                <div className="w-full rounded-3xl px-8 py-8 flex flex-col gap-5"
+                    style={{ border: '1.5px solid #e8edf3', background: '#ffffff', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+
+                    <div className="space-y-1">
+                        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0 }}>Welcome back</h1>
+                        <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>Sign in to continue your journey</p>
+                    </div>
+
+                    <motion.button
+                        whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.975 }}
+                        onClick={handleGoogle} disabled={loading}
+                        className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-semibold text-[14px] text-slate-700 transition-all disabled:opacity-60"
+                        style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0' }}>
+                        {loading
+                            ? <><Loader2 className="w-4 h-4 animate-spin text-slate-400" /> Signing in…</>
+                            : <><GoogleIcon /> Continue with Google</>}
+                    </motion.button>
+
+                    <p style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', lineHeight: 1.6, margin: 0 }}>
+                        By continuing you agree to our Terms & Privacy Policy
+                    </p>
+                </div>
+
+                {/* Switch link OUTSIDE card */}
+                <p style={{ fontSize: 13, color: '#94a3b8' }}>
+                    Don&apos;t have an account?{' '}
+                    <Link href="/signup" className="text-[#22a8e0] font-semibold hover:underline">Sign up</Link>
+                </p>
             </motion.div>
         </div>
     );
