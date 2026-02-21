@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+
+  /* Clean White Theme */
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-variant: #f4f4f5; /* Zinc 100 */
+  
+  --color-primary: #0ea5e9; /* Sky 500 */
+  --color-on-primary: #ffffff;
+  --color-primary-container: #e0f2fe; /* Sky 100 */
+  --color-on-primary-container: #0369a1; /* Sky 700 */
+
+  --color-secondary: #6366f1; /* Indigo 500 */
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e0e7ff; /* Indigo 100 */
+  --color-on-secondary-container: #3730a3; /* Indigo 800 */
+
+  --color-tertiary: #10b981; /* Emerald 500 */
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #d1fae5; /* Emerald 100 */
+  --color-on-tertiary-container: #065f46; /* Emerald 800 */
+
+  --color-error: #ef4444;
+  --color-on-error: #ffffff;
+  
+  --color-on-background: #09090b; /* Zinc 950 */
+  --color-on-surface: #09090b; /* Zinc 950 */
+  --color-on-surface-variant: #71717a; /* Zinc 500 */
+  
+  --color-outline: #e4e4e7; /* Zinc 200 */
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-on-surface-variant);
+}
