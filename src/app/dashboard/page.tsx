@@ -11,7 +11,7 @@ function StatsCard({ title, value, icon: Icon, gradient, iconBg }: { title: stri
     return (
         <div
             className="rounded-3xl border border-white/60 backdrop-blur-xl p-6 flex items-center justify-between shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-            style={{ background: 'rgba(255,255,255,0.45)' }}
+            style={{ background: 'rgba(255,255,255,0.55)' }}
         >
             <div>
                 <p className="text-sm font-medium text-slate-500">{title}</p>
@@ -66,7 +66,7 @@ function DashboardContent() {
                     <div className="lg:col-span-2">
                         <div
                             className="rounded-3xl border border-white/60 backdrop-blur-xl h-full shadow-md"
-                            style={{ background: 'rgba(255,255,255,0.45)' }}
+                            style={{ background: 'rgba(255,255,255,0.55)' }}
                         >
                             <div className="p-6 border-b border-white/40">
                                 <h3 className="text-lg font-bold text-slate-800 font-display">Recommended Paths</h3>

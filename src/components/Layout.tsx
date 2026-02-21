@@ -39,7 +39,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           "hidden md:flex flex-col border-r border-white/40 backdrop-blur-2xl transition-all duration-300 relative z-10 shadow-xl",
           isCollapsed ? "w-20" : "w-64"
         )}
-        style={{ background: 'rgba(255,255,255,0.45)' }}
+        style={{ background: 'rgba(255,255,255,0.22)' }}
       >
         {/* Logo & Brand */}
         <div className="p-5 flex items-center gap-3 overflow-hidden border-b border-white/30">
@@ -160,7 +160,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-sm" />
           <div
             className="absolute right-0 top-0 bottom-0 w-72 border-l border-white/40 p-4 shadow-2xl"
-            style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(24px)' }}
+            style={{ background: 'rgba(255,255,255,0.32)', backdropFilter: 'blur(24px)' }}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">

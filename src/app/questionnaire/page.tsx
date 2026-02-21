@@ -92,18 +92,18 @@ function Questionnaire() {
     const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
     return (
-        <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 sm:p-6 bg-slate-50 dark:bg-slate-950">
+        <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4 sm:p-6" style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #f8faff 50%, #e0f2fe 100%)' }}>
             {/* Subtle Blue Blur Gradients */}
-            <div className="absolute top-0 inset-x-0 h-[600px] w-full max-w-lg mx-auto bg-blue-500/10 dark:bg-blue-600/10 blur-[100px] rounded-full pointer-events-none transform -translate-y-1/2"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-indigo-500/15 blur-[120px] rounded-full pointer-events-none"></div>
-            <div className="absolute top-[30%] left-[-10%] w-[250px] h-[250px] bg-blue-300/20 dark:bg-blue-800/20 blur-[100px] rounded-full pointer-events-none"></div>
+            <div className="absolute top-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+            <div className="absolute bottom-[-15%] right-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(14,165,233,0.18) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+            <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)', filter: 'blur(80px)' }} />
 
             {/* Mobile-view Glassmorphic Container */}
-            <Card className="w-full max-w-[400px] min-h-[640px] flex flex-col shadow-2xl border border-white/40 dark:border-white/10 bg-white/50 dark:bg-[#121212]/50 backdrop-blur-2xl rounded-[2.5rem] relative z-10 overflow-hidden transition-all duration-300">
+            <Card className="w-full max-w-[400px] min-h-[640px] flex flex-col shadow-2xl border border-white/60 backdrop-blur-2xl rounded-[2.5rem] relative z-10 overflow-hidden transition-all duration-300" style={{ background: 'rgba(255,255,255,0.55)' }}>
                 {/* Minimal Progress Bar */}
-                <div className="w-full bg-black/5 dark:bg-white/5 h-1.5 backdrop-blur-sm">
+                <div className="w-full h-1.5" style={{ background: 'rgba(0,0,0,0.06)' }}>
                     <div
-                        className="bg-blue-600 dark:bg-blue-400 h-full transition-all duration-500 ease-out"
+                        className="bg-blue-600 h-full transition-all duration-500 ease-out"
                         style={{ width: `${progress}%` }}
                     />
                 </div>
@@ -112,12 +112,12 @@ function Questionnaire() {
                     <div className="flex items-center justify-between mb-6">
                         <button
                             onClick={handleBack}
-                            className="p-2 -ml-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-slate-700 dark:text-slate-300"
+                            className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors text-slate-700"
                             aria-label="Go back"
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </button>
-                        <div className="text-xs font-semibold tracking-widest uppercase text-blue-600 dark:text-blue-400 opacity-80 backdrop-blur-md px-3 py-1 bg-blue-500/10 rounded-full">
+                        <div className="text-xs font-semibold tracking-widest uppercase text-blue-600 opacity-80 px-3 py-1 bg-blue-500/10 rounded-full">
                             {currentQuestionIndex + 1} / {questions.length}
                         </div>
                     </div>
@@ -129,10 +129,10 @@ function Questionnaire() {
                             <span className="inline-block p-3 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 mb-4">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
                             </span>
-                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">
+                            <h3 className="text-2xl font-bold text-slate-900 leading-tight">
                                 {questions[currentQuestionIndex]}
                             </h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <p className="text-sm text-slate-500">
                                 How much would you enjoy this?
                             </p>
                         </div>
@@ -147,19 +147,20 @@ function Questionnaire() {
                                         className={cn(
                                             "group flex flex-col items-center justify-center p-3 sm:py-4 rounded-2xl transition-all duration-300 outline-none",
                                             isSelected
-                                                ? "bg-blue-600/10 dark:bg-blue-500/20 border-2 border-blue-500 shadow-sm scale-105"
-                                                : "bg-white/40 dark:bg-white/5 border-2 border-transparent hover:bg-white/60 dark:hover:bg-white/10 hover:border-black/5 dark:hover:border-white/10 hover:scale-105"
+                                                ? "bg-blue-600/10 border-2 border-blue-500 shadow-sm scale-105"
+                                                : "border-2 border-transparent hover:border-black/5 hover:scale-105"
                                         )}
+                                        style={!isSelected ? { background: 'rgba(255,255,255,0.5)' } : {}}
                                     >
                                         <span className={cn(
                                             "text-3xl sm:text-4xl mb-2 transition-transform duration-300",
-                                            isSelected ? "scale-110" : "group-hover:scale-110 grayscale-[0.3]"
+                                            isSelected ? "scale-110" : "group-hover:scale-110"
                                         )}>
                                             {option.emoji}
                                         </span>
                                         <span className={cn(
                                             "text-[9px] sm:text-[10px] font-semibold text-center leading-tight transition-colors",
-                                            isSelected ? "text-blue-700 dark:text-blue-400" : "text-slate-500 dark:text-slate-400"
+                                            isSelected ? "text-blue-700" : "text-slate-500"
                                         )}>
                                             {option.label}
                                         </span>
@@ -178,8 +179,9 @@ function Questionnaire() {
                             "w-full h-14 rounded-2xl font-semibold text-base transition-all duration-300 flex items-center justify-center gap-2",
                             currentAnswer !== undefined
                                 ? "bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/25"
-                                : "bg-black/5 dark:bg-white/5 text-slate-400 dark:text-slate-500 pointer-events-none"
+                                : "text-slate-400 pointer-events-none"
                         )}
+                        style={currentAnswer === undefined ? { background: 'rgba(0,0,0,0.06)' } : {}}
                     >
                         {currentQuestionIndex === questions.length - 1 ? 'See Results' : 'Continue'}
                         {currentQuestionIndex === questions.length - 1 ? <Check className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}

@@ -1,0 +1,156 @@
+export const CAREERS = [
+    {
+        id: 1,
+        title: 'UX Designer',
+        domain: 'creative',
+        type: 'Creative',
+        emoji: '🎨',
+        salary: '₹8L–₹25L',
+        growth: '+14%',
+        time: '3–5 yrs',
+        tags: ['Figma', 'Research', 'Prototyping'],
+        desc: 'Craft intuitive digital experiences that delight millions of users worldwide.',
+        longDesc: `UX Designers are the architects of the digital experience. They bridge the gap between what users need and what technology can deliver. From conducting user research to building high-fidelity prototypes, they are responsible for ensuring that every interaction feels natural, effortless, and delightful.
+
+Working closely with product managers, engineers, and stakeholders, UX Designers translate fuzzy problem statements into elegant solutions. The role demands empathy, analytical thinking, and a relentless focus on the end user.`,
+        skills: ['Figma', 'Sketch', 'User Research', 'Wireframing'],
+        requirements: ['Portfolio of real projects', 'Proficiency in Figma/Sketch', 'Understanding of usability heuristics', 'Communication skills'],
+        dayInLife: [
+            'Morning: Review user feedback and analytics dashboards',
+            'Mid-morning: Lead a design critique session with the team',
+            'Afternoon: Work on high-fidelity prototypes for feature X',
+            'Late afternoon: Conduct a 1-on-1 user interview session',
+            'Evening: Document research findings and update Notion',
+        ],
+        youtubeId: 'eBFoMZaKFaM',
+    },
+    {
+        id: 2,
+        title: 'Data Scientist',
+        domain: 'tech',
+        type: 'Analytical',
+        emoji: '📊',
+        salary: '₹12L–₹35L',
+        growth: '+36%',
+        time: '2–4 yrs',
+        tags: ['Python', 'ML', 'Statistics'],
+        desc: 'Turn raw data into actionable insights that drive billion-dollar decisions.',
+        longDesc: `Data Scientists sit at the intersection of mathematics, computer science, and domain expertise. They build models that predict customer churn, recommend products, detect fraud, and optimize complex systems at scale.
+
+The role has exploded in demand with the rise of big data and AI. Companies across every industry — from fintech to healthcare — are racing to hire people who can wrangle messy data into clear, actionable signals.`,
+        skills: ['Python', 'TensorFlow', 'SQL', 'Statistics'],
+        requirements: ['Strong Python / R skills', 'Understanding of ML algorithms', 'Experience with data visualization', 'Statistical reasoning'],
+        dayInLife: [
+            'Morning: Pull and clean raw data for the current sprint',
+            'Mid-morning: Train a classification model and tune hyperparameters',
+            'Afternoon: Present findings to the business team',
+            'Late afternoon: Collaborate with engineering on model deployment',
+            'Evening: Read recent ML papers / Kaggle',
+        ],
+        youtubeId: 'X3paOmcrTjQ',
+    },
+    {
+        id: 3,
+        title: 'Product Manager',
+        domain: 'business',
+        type: 'Leadership',
+        emoji: '🚀',
+        salary: '₹15L–₹45L',
+        growth: '+19%',
+        time: '4–6 yrs',
+        tags: ['Strategy', 'Agile', 'Roadmapping'],
+        desc: 'Lead cross-functional teams to ship products that change how people live.',
+        longDesc: `Product Managers are the CEOs of their product. They own the vision, strategy, and execution of a product from ideation to launch and beyond. The role requires wearing many hats — part strategist, part analyst, part communicator, part cheerleader.
+
+Great PMs are obsessed with understanding customer problems, translating them into clear requirements, and rallying engineers and designers around a compelling, achievable vision.`,
+        skills: ['Strategy', 'Agile', 'Analytics', 'Communication'],
+        requirements: ['Strong communication skills', 'Analytical mindset', 'Familiarity with Agile/Scrum', 'Ability to influence without authority'],
+        dayInLife: [
+            'Morning: Standup with engineering team, unblock issues',
+            'Mid-morning: Write PRD for upcoming feature',
+            'Afternoon: Customer discovery call with 3 users',
+            'Late afternoon: Review A/B test results with growth team',
+            'Evening: Update roadmap and inform stakeholders',
+        ],
+        youtubeId: '64TkBPADhEo',
+    },
+    {
+        id: 4,
+        title: 'Frontend Engineer',
+        domain: 'tech',
+        type: 'Technical',
+        emoji: '⚡',
+        salary: '₹10L–₹30L',
+        growth: '+25%',
+        time: '2–4 yrs',
+        tags: ['React', 'TypeScript', 'CSS'],
+        desc: 'Build blazing-fast, pixel-perfect interfaces that users love to interact with.',
+        longDesc: `Frontend Engineers craft the visual and interactive layer of software. They work with design systems, component libraries, and API integrations to bring mockups to life with performant, accessible, and maintainable code.
+
+The discipline has grown massively in depth — from mastering build tooling and state management to understanding Core Web Vitals and accessibility standards. A great frontend engineer is as comfortable debating design decisions as they are debugging a race condition.`,
+        skills: ['React', 'TypeScript', 'Next.js', 'CSS'],
+        requirements: ['Strong JavaScript/TypeScript', 'React or Vue experience', 'CSS proficiency', 'Familiarity with build tools'],
+        dayInLife: [
+            'Morning: Code review PRs, leave comments',
+            'Mid-morning: Build new UI component from Figma design',
+            'Afternoon: Debug performance regression in prod',
+            'Late afternoon: Pair program with backend on API contract',
+            'Evening: Contribute to open source / side project',
+        ],
+        youtubeId: 'ysEN5RaKOlA',
+    },
+    {
+        id: 5,
+        title: 'ML Engineer',
+        domain: 'tech',
+        type: 'Technical',
+        emoji: '🤖',
+        salary: '₹18L–₹55L',
+        growth: '+40%',
+        time: '3–5 yrs',
+        tags: ['PyTorch', 'MLOps', 'AI'],
+        desc: 'Engineer the intelligence layer powering the next wave of AI-native products.',
+        longDesc: `ML Engineers bridge the gap between research and production. While data scientists build models, ML engineers productionize them — ensuring they scale, stay fresh, and deliver results reliably in real-world conditions.
+
+With the explosion of LLMs and generative AI, demand for ML Engineers has never been higher. The role involves deep knowledge of model serving, feature engineering, experiment tracking, and distributed training.`,
+        skills: ['PyTorch', 'MLOps', 'Python', 'Cloud'],
+        requirements: ['Python expertise', 'Experience with PyTorch/TensorFlow', 'Cloud platform knowledge (AWS/GCP)', 'MLOps tooling (MLflow, Kubeflow)'],
+        dayInLife: [
+            'Morning: Monitor model performance dashboards',
+            'Mid-morning: Refactor training pipeline for efficiency',
+            'Afternoon: Deploy a new model version to staging',
+            'Late afternoon: Meet with data science on next experiment',
+            'Evening: Deep-dive into a new arxiv paper',
+        ],
+        youtubeId: 'aircAruvnKk',
+    },
+    {
+        id: 6,
+        title: 'Content Strategist',
+        domain: 'creative',
+        type: 'Creative',
+        emoji: '✍️',
+        salary: '₹6L–₹20L',
+        growth: '+11%',
+        time: '2–4 yrs',
+        tags: ['SEO', 'Storytelling', 'Analytics'],
+        desc: 'Shape brand narratives and build content ecosystems that drive organic growth.',
+        longDesc: `Content Strategists are storytellers with a data backbone. They plan, create, and optimize content that attracts the right audience, builds brand trust, and converts readers into customers.
+
+From editorial calendars to keyword strategies to tone-of-voice guides, they ensure that every word a company publishes serves a clear purpose. The role sits at the intersection of creativity, marketing, and analytics.`,
+        skills: ['SEO', 'Copywriting', 'Analytics', 'Strategy'],
+        requirements: ['Excellent writing skills', 'SEO fundamentals', 'Google Analytics proficiency', 'Content planning experience'],
+        dayInLife: [
+            'Morning: Review organic traffic metrics in Search Console',
+            'Mid-morning: Draft a long-form blog post outline',
+            'Afternoon: Collaborate with design on infographic assets',
+            'Late afternoon: Keyword research for next quarter',
+            'Evening: Engage with audience on social / read industry blogs',
+        ],
+        youtubeId: 'mxHY9d8l6IQ',
+    },
+];
+
+export type Career = typeof CAREERS[0];
+export const DOMAIN_OPTIONS = ['tech', 'business', 'creative', 'academics', 'sports', 'research'];
+export const LEVEL_OPTIONS = ['beginner', 'intermediate', 'advanced'];

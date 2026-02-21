@@ -7,32 +7,40 @@
 
   /* Material 3 Expressive — Glassmorphic Palette */
   --color-background: #f0f4ff;
-  --color-surface: rgba(255,255,255,0.45);
-  --color-surface-variant: rgba(241,245,255,0.7);
+  --color-surface: rgba(255, 255, 255, 0.45);
+  --color-surface-variant: rgba(241, 245, 255, 0.7);
 
-  --color-primary: #3b82f6;       /* Blue 500 */
+  --color-primary: #3b82f6;
+  /* Blue 500 */
   --color-on-primary: #ffffff;
-  --color-primary-container: rgba(219,234,254,0.7);    /* Blue 100 @ 70% */
-  --color-on-primary-container: #1e40af;               /* Blue 800 */
+  --color-primary-container: rgba(219, 234, 254, 0.7);
+  /* Blue 100 @ 70% */
+  --color-on-primary-container: #1e40af;
+  /* Blue 800 */
 
-  --color-secondary: #6366f1;     /* Indigo 500 */
+  --color-secondary: #6366f1;
+  /* Indigo 500 */
   --color-on-secondary: #ffffff;
-  --color-secondary-container: rgba(224,231,255,0.7);
+  --color-secondary-container: rgba(224, 231, 255, 0.7);
   --color-on-secondary-container: #3730a3;
 
-  --color-tertiary: #10b981;      /* Emerald 500 */
+  --color-tertiary: #10b981;
+  /* Emerald 500 */
   --color-on-tertiary: #ffffff;
-  --color-tertiary-container: rgba(209,250,229,0.7);
+  --color-tertiary-container: rgba(209, 250, 229, 0.7);
   --color-on-tertiary-container: #065f46;
 
   --color-error: #ef4444;
   --color-on-error: #ffffff;
 
-  --color-on-background: #1e293b; /* Slate 800 */
+  --color-on-background: #1e293b;
+  /* Slate 800 */
   --color-on-surface: #1e293b;
-  --color-on-surface-variant: #64748b; /* Slate 500 */
+  --color-on-surface-variant: #64748b;
+  /* Slate 500 */
 
-  --color-outline: rgba(148,163,184,0.3); /* Slate 400 @ 30% */
+  --color-outline: rgba(148, 163, 184, 0.3);
+  /* Slate 400 @ 30% */
 }
 
 /* Global body — glassmorphic base */
@@ -45,7 +53,12 @@ body {
   min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display);
   letter-spacing: -0.02em;
 }
@@ -77,28 +90,33 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: rgba(241, 245, 249, 0.5);
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.5);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(100, 116, 139, 0.7);
 }
 
 /* Blur gradient blobs (reusable) */
 .blob-blue {
-  background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%);
   filter: blur(60px);
 }
+
 .blob-sky {
-  background: radial-gradient(circle, rgba(14,165,233,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.18) 0%, transparent 70%);
   filter: blur(60px);
 }
+
 .blob-violet {
-  background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
   filter: blur(80px);
 }
 
