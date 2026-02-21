@@ -35,34 +35,45 @@ export default function Login() {
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4"
             style={{ background: '#ffffff' }}>
+
             {/* 4-corner blur blobs */}
             <div className="absolute top-[-8%] left-[-8%] w-[380px] h-[380px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.13) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%)', filter: 'blur(90px)' }} />
             <div className="absolute top-[-8%] right-[-8%] w-[380px] h-[380px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(34,168,224,0.12) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+                style={{ background: 'radial-gradient(circle, rgba(34,168,224,0.05) 0%, transparent 70%)', filter: 'blur(90px)' }} />
             <div className="absolute bottom-[-8%] left-[-8%] w-[380px] h-[380px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.11) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)', filter: 'blur(90px)' }} />
             <div className="absolute bottom-[-8%] right-[-8%] w-[380px] h-[380px] rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(56,195,245,0.10) 0%, transparent 70%)', filter: 'blur(70px)' }} />
+                style={{ background: 'radial-gradient(circle, rgba(56,195,245,0.04) 0%, transparent 70%)', filter: 'blur(90px)' }} />
 
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="z-10 w-full max-w-sm flex flex-col items-center gap-8">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: 'easeOut' }}
+                className="z-10 w-full max-w-sm flex flex-col items-center">
 
-                {/* Logo + wordmark */}
-                <div className="flex flex-col items-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-sm"
-                        style={{ border: '1px solid #e2e8f0' }}>
+                {/* Logo — floats above card, overlaps via negative margin */}
+                <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 18 }}
+                    className="relative z-10 mb-[-36px]">
+                    <div className="w-[88px] h-[88px] rounded-[26px] overflow-hidden"
+                        style={{
+                            border: '2px solid #f1f5f9',
+                            boxShadow: '0 8px 32px rgba(99,102,241,0.18), 0 2px 8px rgba(0,0,0,0.08)',
+                        }}>
                         <img src={LOGO_URL} alt="CareerLand" className="w-full h-full object-cover" />
                     </div>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: '#1e293b', letterSpacing: '-0.01em' }}>CareerLand</span>
-                </div>
+                </motion.div>
 
                 {/* Card */}
-                <div className="w-full rounded-3xl px-8 py-8 flex flex-col gap-5"
-                    style={{ border: '1.5px solid #e8edf3', background: '#ffffff', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+                <div className="w-full rounded-3xl pt-14 px-8 pb-8 flex flex-col gap-5"
+                    style={{
+                        border: '1.5px solid #e8edf3',
+                        background: '#ffffff',
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+                    }}>
 
-                    <div className="space-y-1">
+                    <div className="space-y-1 text-center">
                         <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0 }}>Welcome back</h1>
                         <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>Sign in to continue your journey</p>
                     </div>
@@ -82,8 +93,7 @@ export default function Login() {
                     </p>
                 </div>
 
-                {/* Switch link OUTSIDE card */}
-                <p style={{ fontSize: 13, color: '#94a3b8' }}>
+                <p style={{ fontSize: 13, color: '#94a3b8', marginTop: 20 }}>
                     Don&apos;t have an account?{' '}
                     <Link href="/signup" className="text-[#22a8e0] font-semibold hover:underline">Sign up</Link>
                 </p>
