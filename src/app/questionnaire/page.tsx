@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 
@@ -131,14 +131,11 @@ function QuestionnaireContent() {
     const [idx, setIdx] = useState(0);
     const [answers, setAnswers] = useState<Record<number, number>>({});
     const [dir, setDir] = useState<1 | -1>(1);
-    const [imgLoaded, setImgLoaded] = useState(false);
 
     const q = QUESTIONS[idx];
     const answered = answers[idx];
-    const progress = ((idx) / QUESTIONS.length) * 100;
+    const progress = ((idx + 1) / QUESTIONS.length) * 100;
     const isLast = idx === QUESTIONS.length - 1;
-
-    useEffect(() => { setImgLoaded(false); }, [idx]);
 
     const goNext = () => {
         if (answered === undefined) return;
@@ -159,163 +156,184 @@ function QuestionnaireContent() {
         setIdx(i => i - 1);
     };
 
-    const select = (val: number) => {
-        setAnswers(prev => ({ ...prev, [idx]: val }));
-    };
+    const select = (val: number) => setAnswers(prev => ({ ...prev, [idx]: val }));
+    const canContinue = answered !== undefined;
 
     return (
-        <div className="min-h-screen w-full flex flex-col lg:flex-row overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #f8faff 50%, #e0f2fe 100%)' }}>
+        <div className="min-h-screen w-full flex flex-col relative overflow-hidden"
+            style={{ background: '#ffffff' }}>
 
-            {/* Subtle blobs */}
-            <div className="fixed top-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none z-0"
-                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-            <div className="fixed bottom-[-15%] right-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none z-0"
-                style={{ background: 'radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+            {/* 4-corner blur blobs */}
+            <div className="absolute top-[-8%] left-[-8%] w-[420px] h-[420px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.13) 0%, transparent 70%)', filter: 'blur(72px)' }} />
+            <div className="absolute top-[-8%] right-[-8%] w-[420px] h-[420px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(34,168,224,0.12) 0%, transparent 70%)', filter: 'blur(72px)' }} />
+            <div className="absolute bottom-[-8%] left-[-8%] w-[420px] h-[420px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.11) 0%, transparent 70%)', filter: 'blur(72px)' }} />
+            <div className="absolute bottom-[-8%] right-[-8%] w-[420px] h-[420px] rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle, rgba(56,195,245,0.10) 0%, transparent 70%)', filter: 'blur(72px)' }} />
 
-            {/* ── LEFT: Image panel ── */}
-            <div className="relative lg:w-[45%] h-[38vh] lg:h-screen overflow-hidden shrink-0">
-                <AnimatePresence mode="wait" custom={dir}>
-                    <motion.div key={idx} custom={dir}
-                        initial={{ x: dir === 1 ? '100%' : '-100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: dir === 1 ? '-40%' : '40%', opacity: 0 }}
-                        transition={{ duration: 0.4, ease: [0.32, 0, 0.67, 0] }}
-                        className="absolute inset-0">
-                        <img
-                            src={q.img}
-                            alt={q.text}
-                            className="w-full h-full object-cover"
-                            onLoad={() => setImgLoaded(true)}
-                            style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.4s' }}
-                        />
-                        {/* Light gradient overlay at bottom for mobile readability */}
-                        <div className="absolute inset-0 lg:hidden"
-                            style={{ background: 'linear-gradient(to top, rgba(238,242,255,0.95) 0%, transparent 55%)' }} />
-                        {/* Right-side fade for desktop */}
-                        <div className="absolute inset-0 hidden lg:block"
-                            style={{ background: 'linear-gradient(to right, transparent 55%, rgba(238,242,255,0.95) 100%)' }} />
+            {/* Cyan progress bar */}
+            <div style={{ height: 7, background: '#f1f5f9', position: 'relative', zIndex: 10 }}>
+                <motion.div
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                    style={{ height: '100%', background: '#22a8e0' }} />
+            </div>
 
-                        {/* Category pill */}
-                        <div className="absolute top-5 left-5 px-3 py-1.5 rounded-full text-[11px] font-bold"
-                            style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', color: '#1e40af', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                            {CATEGORY_LABEL[q.type]}
+            {/* Main content — vertically centered */}
+            <div className="flex-1 flex flex-col items-center justify-center px-8 lg:px-20 pb-24 max-w-3xl mx-auto w-full z-10">
+
+                {/* Mascot + speech bubble */}
+                <AnimatePresence mode="wait">
+                    <motion.div key={idx}
+                        initial={{ opacity: 0, x: dir === 1 ? 30 : -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: dir === 1 ? -30 : 30 }}
+                        transition={{ duration: 0.28, ease: 'easeOut' }}
+                        className="flex items-center gap-5 mb-8 w-full">
+
+                        {/* Mascot */}
+                        <div className="shrink-0 w-28 h-28">
+                            <video autoPlay loop muted playsInline className="w-full h-full object-contain">
+                                <source src="https://uafn22926g.ufs.sh/f/F8enbsMKbqz7wGLv60fSKh0RHXxWkbs1TyYLNaoDze9PuVpt" />
+                            </video>
                         </div>
+
+                        {/* Speech bubble */}
+                        <div style={{ filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.07))' }} className="flex-1">
+                            <div style={{
+                                position: 'relative',
+                                background: '#ffffff',
+                                border: '1.5px solid #e2e8f0',
+                                borderRadius: 20,
+                                padding: '18px 22px',
+                                overflow: 'visible',
+                            }}>
+                                {/* Category chip */}
+                                <span style={{
+                                    display: 'inline-block', marginBottom: 8,
+                                    fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+                                    letterSpacing: '0.07em', color: '#22a8e0',
+                                    background: '#f0f9ff', border: '1px solid #e0f2fe',
+                                    borderRadius: 99, padding: '2px 10px',
+                                }}>
+                                    {CATEGORY_LABEL[q.type]}
+                                </span>
+                                <p style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', lineHeight: 1.5, margin: 0 }}>
+                                    Would you enjoy to — <em style={{ fontStyle: 'normal', color: '#0369a1' }}>{q.text.toLowerCase()}</em>?
+                                </p>
+                                {/* Left-side tail */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: 20, left: -10,
+                                    width: 20, height: 20,
+                                    background: '#ffffff',
+                                    borderTop: '1.5px solid #e2e8f0',
+                                    borderLeft: '1.5px solid #e2e8f0',
+                                    transform: 'rotate(-45deg)',
+                                }} />
+                            </div>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+
+                {/* Emoji options */}
+                <AnimatePresence mode="wait">
+                    <motion.div key={`opt-${idx}`}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.22 }}
+                        className="w-full">
+
+                        {/* Scale hint */}
+                        <div className="flex items-center gap-3 mb-5">
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#f87171' }}>Strongly Dislike</span>
+                            <div className="flex-1 h-0.5 rounded-full"
+                                style={{ background: 'linear-gradient(to right, #fca5a5, #e2e8f0, #6ee7b7)' }} />
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#10b981' }}>Strongly Like</span>
+                        </div>
+
+                        {/* 5 face buttons */}
+                        <div className="grid grid-cols-5 gap-3">
+                            {OPTIONS.map((opt, i) => {
+                                const active = answered === opt.value;
+                                return (
+                                    <motion.button key={opt.value}
+                                        onClick={() => select(opt.value)}
+                                        initial={{ opacity: 0, y: 8 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.05 }}
+                                        whileHover={{ scale: 1.08, y: -3 }}
+                                        whileTap={{ scale: 0.92 }}
+                                        className="flex flex-col items-center gap-2.5 outline-none">
+                                        <div style={{
+                                            width: 64, height: 64,
+                                            transition: 'all 0.2s',
+                                            filter: active ? 'drop-shadow(0 4px 14px rgba(34,168,224,0.5))' : 'none',
+                                            transform: active ? 'scale(1.15)' : 'scale(1)',
+                                        }}>
+                                            <FaceIcon value={opt.value} active={active} />
+                                        </div>
+                                        <span style={{
+                                            fontSize: 10, fontWeight: 700,
+                                            color: active ? '#0369a1' : '#94a3b8',
+                                            textAlign: 'center', lineHeight: 1.3,
+                                        }}>
+                                            {opt.label.split(' ').map((w, i2) => (
+                                                <React.Fragment key={i2}>{w}{i2 === 0 && opt.label.split(' ').length > 1 ? <br /> : ''}</React.Fragment>
+                                            ))}
+                                        </span>
+                                    </motion.button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Answered hint */}
+                        <p style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', marginTop: 20 }}>
+                            {Object.keys(answers).length} of {QUESTIONS.length} answered
+                            {!canContinue && ' · Select an option to continue'}
+                        </p>
                     </motion.div>
                 </AnimatePresence>
             </div>
 
-            {/* ── RIGHT: Question + Options ── */}
-            <div className="flex-1 flex flex-col relative z-10">
-                {/* Top bar */}
-                <div className="flex items-center gap-4 px-6 lg:px-10 pt-6 pb-4 shrink-0">
+            {/* Fixed bottom bar */}
+            <div className="fixed bottom-0 left-0 right-0 z-20"
+                style={{ background: '#ffffff', borderTop: '1px solid #f1f5f9', padding: '14px 32px' }}>
+                <div className="max-w-3xl mx-auto flex items-center justify-between">
                     <button onClick={goBack}
-                        className="w-9 h-9 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all shrink-0 shadow-sm">
-                        <ArrowLeft className="w-4 h-4" />
+                        className="flex items-center gap-1 text-[12px] font-semibold text-slate-400 hover:text-slate-600 transition-colors">
+                        <ArrowLeft className="w-3.5 h-3.5" /> Back
                     </button>
-                    <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Interest Survey</span>
-                            <span className="text-[11px] font-bold text-blue-600">{idx + 1} / {QUESTIONS.length}</span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                            <motion.div className="h-full rounded-full bg-blue-500"
-                                animate={{ width: `${((idx + 1) / QUESTIONS.length) * 100}%` }}
-                                transition={{ duration: 0.35, ease: 'easeOut' }} />
-                        </div>
-                    </div>
-                </div>
 
-                {/* Question content */}
-                <div className="flex-1 flex flex-col justify-center px-6 lg:px-10 pb-6">
-                    <AnimatePresence mode="wait" custom={dir}>
-                        <motion.div key={idx} custom={dir}
-                            initial={{ x: dir === 1 ? 50 : -50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: dir === 1 ? -50 : 50, opacity: 0 }}
-                            transition={{ duration: 0.3, ease: [0.32, 0, 0.67, 0] }}
-                            className="space-y-7 max-w-lg">
+                    <span style={{ fontSize: 11, fontWeight: 700, color: '#cbd5e1', letterSpacing: '0.06em' }}>
+                        {idx + 1} / {QUESTIONS.length}
+                    </span>
 
-                            {/* Question */}
-                            <div>
-                                <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">How do you feel about this?</span>
-                                <h2 className="text-[22px] lg:text-[26px] font-bold text-slate-800 leading-tight mt-2">{q.text}</h2>
-                            </div>
-
-                            {/* Emoji option buttons */}
-                            <div className="grid grid-cols-5 gap-2 sm:gap-3">
-                                {OPTIONS.map(opt => {
-                                    const active = answered === opt.value;
-                                    return (
-                                        <motion.button
-                                            key={opt.value}
-                                            onClick={() => select(opt.value)}
-                                            whileTap={{ scale: 0.9 }}
-                                            whileHover={{ scale: 1.06 }}
-                                            className="flex flex-col items-center gap-2 outline-none"
-                                        >
-                                            {/* Face icon */}
-                                            <div className="w-12 h-12 sm:w-14 sm:h-14 transition-all duration-200"
-                                                style={{
-                                                    filter: active ? 'drop-shadow(0 4px 12px rgba(30,58,138,0.4))' : 'none',
-                                                    transform: active ? 'scale(1.12)' : 'scale(1)',
-                                                }}>
-                                                <FaceIcon value={opt.value} active={active} />
-                                            </div>
-                                            {/* Label */}
-                                            <span className="text-[9px] sm:text-[10px] font-semibold text-center leading-tight"
-                                                style={{ color: active ? '#1e40af' : '#94a3b8' }}>
-                                                {opt.label.split(' ').map((w, i) => (
-                                                    <React.Fragment key={i}>{w}{i === 0 && opt.label.split(' ').length > 1 ? <br /> : ''}</React.Fragment>
-                                                ))}
-                                            </span>
-                                        </motion.button>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Scale labels */}
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-semibold text-slate-400">Dislike</span>
-                                <div className="flex-1 h-0.5 rounded-full"
-                                    style={{ background: 'linear-gradient(to right, #f87171, #e2e8f0, #34d399)' }} />
-                                <span className="text-[10px] font-semibold text-slate-400">Enjoy</span>
-                            </div>
-
-                            {/* Navigation buttons */}
-                            <div className="flex gap-3">
-                                {idx > 0 && (
-                                    <button onClick={goBack}
-                                        className="flex items-center gap-1.5 px-5 py-3.5 rounded-2xl border border-slate-200 bg-white text-[13px] font-semibold text-slate-500 hover:border-slate-300 hover:text-slate-700 transition-all shadow-sm">
-                                        <ArrowLeft className="w-4 h-4" /> Previous
-                                    </button>
-                                )}
-                                <motion.button
-                                    onClick={goNext}
-                                    disabled={answered === undefined}
-                                    whileHover={answered !== undefined ? { scale: 1.01 } : {}}
-                                    whileTap={answered !== undefined ? { scale: 0.98 } : {}}
-                                    className="flex-1 py-3.5 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2 transition-all"
-                                    style={{
-                                        background: answered !== undefined ? '#2563eb' : '#f1f5f9',
-                                        color: answered !== undefined ? '#fff' : '#94a3b8',
-                                        boxShadow: answered !== undefined ? '0 4px 20px rgba(37,99,235,0.35)' : 'none',
-                                        cursor: answered !== undefined ? 'pointer' : 'not-allowed',
-                                    }}>
-                                    {isLast ? 'See My Results' : 'Next'}
-                                    {isLast ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-                                </motion.button>
-                            </div>
-
-                            {/* Answered count hint */}
-                            <p className="text-[11px] text-slate-300 text-center">
-                                {Object.keys(answers).length} of {QUESTIONS.length} answered
-                                {answered === undefined && ' · Select an option to continue'}
-                            </p>
-                        </motion.div>
-                    </AnimatePresence>
+                    <motion.button onClick={goNext}
+                        disabled={!canContinue}
+                        whileHover={canContinue ? { scale: 1.04 } : {}}
+                        whileTap={canContinue ? { scale: 0.96 } : {}}
+                        style={{
+                            background: canContinue ? '#22a8e0' : '#e2e8f0',
+                            color: canContinue ? '#ffffff' : '#94a3b8',
+                            borderRadius: 100,
+                            padding: '11px 32px',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            letterSpacing: '0.06em',
+                            textTransform: 'uppercase',
+                            cursor: canContinue ? 'pointer' : 'not-allowed',
+                            border: 'none', outline: 'none',
+                            transition: 'background 0.18s',
+                        }}>
+                        {isLast ? 'See Results ✓' : 'Continue'}
+                    </motion.button>
                 </div>
             </div>
         </div>
     );
 }
+
