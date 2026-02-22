@@ -45,12 +45,25 @@ function DashboardContent() {
         const token = params.get('token');
         const email = params.get('email');
         const name = params.get('name');
+        const isNewParam = params.get('new'); // '1' = new user, '0' = returning
+
         if (token && email) {
+            // Check if this user was already in localStorage (returning user)
+            const existingUser = localStorage.getItem('careerland_user');
+            const existingParsed = existingUser ? JSON.parse(existingUser) : null;
+            const isReturning = existingParsed?.email === email;
+
             login(email, token, name || undefined);
-            // Clean URL
-            router.replace('/dashboard');
+
+            // new=0 explicitly → dashboard; new=1 or brand new → onboarding
+            if (isNewParam === '0' || isReturning) {
+                router.replace('/dashboard');
+            } else {
+                router.replace('/onboarding');
+            }
         }
     }, [params]); // eslint-disable-line
+
 
     return (
         <Layout>
