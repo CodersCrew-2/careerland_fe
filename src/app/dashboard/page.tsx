@@ -48,6 +48,11 @@ function DashboardContent() {
         const isNewParam = params.get('new');
 
         if (token && email) {
+            // Set auth cookie so server-side API routes can read it
+            const expires = new Date(Date.now() + 7 * 864e5).toUTCString();
+            document.cookie = `cl_token=${encodeURIComponent(token)}; expires=${expires}; path=/; SameSite=Lax`;
+            document.cookie = `cl_user=${encodeURIComponent(JSON.stringify({ email, name }))}; expires=${expires}; path=/; SameSite=Lax`;
+
             // ── Popup mode: send data to parent window and close ──
             if (window.opener && !window.opener.closed) {
                 window.opener.postMessage(

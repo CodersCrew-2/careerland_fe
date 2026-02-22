@@ -2,6 +2,16 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+// ── Cookie helpers (client-side) ──────────────────────────────
+function setCookie(name: string, value: string, days = 7) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+function clearCookie(name: string) {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+}
+
 interface User {
   email: string;
   name?: string;
@@ -40,12 +50,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const newUser = { email, name: name || email.split('@')[0], apiToken };
     setUser(newUser);
     localStorage.setItem('careerland_user', JSON.stringify(newUser));
+    // Persist token & user info as cookies so server-side API routes can read them
+    if (apiToken) setCookie('cl_token', apiToken);
+    setCookie('cl_user', JSON.stringify({ email, name: newUser.name }));
   };
 
   const signup = (email: string, name?: string, apiToken?: string) => {
     const newUser = { email, name: name || email.split('@')[0], apiToken };
     setUser(newUser);
     localStorage.setItem('careerland_user', JSON.stringify(newUser));
+    if (apiToken) setCookie('cl_token', apiToken);
+    setCookie('cl_user', JSON.stringify({ email, name: newUser.name }));
     setOnboardingStepState(1);
     localStorage.setItem('careerland_step', '1');
   };
@@ -57,6 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('careerland_user');
     localStorage.removeItem('careerland_step');
     localStorage.removeItem('careerland_onboarding_session');
+    clearCookie('cl_token');
+    clearCookie('cl_user');
   };
 
   const setOnboardingStep = (step: number) => {
