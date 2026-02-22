@@ -88,13 +88,14 @@ function OnboardingFlow() {
         query: string,
         sessionId?: string,
     ): Promise<{ type: 'question'; questions: Question[] } | { type: 'result' }> => {
-        // Use the Next.js proxy — it normalises the raw agent-events array
-        // and forwards the Bearer token server-to-server.
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://cl-api.rookie.house';
+        // Prefer token from context; fall back to localStorage (in case of page refresh)
         const token = user?.apiToken || localStorage.getItem('cl_access_token') || '';
-        const res = await fetch('/api/onboarding', {
+        const res = await fetch(`${API_BASE}/api/onboarding`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                // Send token as Bearer — avoids cross-origin cookie (SameSite=Lax) limitations
                 ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
             body: JSON.stringify({ query, sessionId }),
