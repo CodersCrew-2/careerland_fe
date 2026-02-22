@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Loader2, Compass, Map, Star } from 'lucide-react';
@@ -26,6 +27,14 @@ const features = [
 ];
 
 export default function Signup() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-white" />}>
+            <SignupContent />
+        </Suspense>
+    );
+}
+
+function SignupContent() {
     const [loading, setLoading] = useState(false);
     const params = useSearchParams();
     const error = params.get('error');

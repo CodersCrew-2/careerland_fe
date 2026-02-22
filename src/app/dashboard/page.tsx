@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/components/context/AuthContext';
@@ -28,7 +28,9 @@ function StatsCard({ title, value, icon: Icon, gradient, iconBg }: { title: stri
 export default function DashboardPage() {
     return (
         <ProtectedRoute>
-            <DashboardContent />
+            <Suspense fallback={<div className="min-h-screen" />}>
+                <DashboardContent />
+            </Suspense>
         </ProtectedRoute>
     );
 }

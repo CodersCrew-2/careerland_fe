@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
-// This page is the client-side landing after OAuth redirect.
-// It reads token/email/name/new from URL, saves to AuthContext, then navigates.
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
     const { login, signup } = useAuth();
     const router = useRouter();
     const params = useSearchParams();
@@ -27,10 +25,10 @@ export default function AuthCallbackPage() {
             signup(email, name, token);
             router.replace('/onboarding');
         } else {
-            login(email, token);
+            login(email, token, name);
             router.replace('/dashboard');
         }
-    }, []);
+    }, []); // eslint-disable-line
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-white">
@@ -39,5 +37,17 @@ export default function AuthCallbackPage() {
                 <p className="text-sm text-slate-400 font-medium">Signing you in…</p>
             </div>
         </div>
+    );
+}
+
+export default function AuthCallbackPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <Loader2 className="w-8 h-8 text-[#22a8e0] animate-spin" />
+            </div>
+        }>
+            <AuthCallbackContent />
+        </Suspense>
     );
 }
