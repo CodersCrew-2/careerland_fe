@@ -89,7 +89,8 @@ function OnboardingFlow() {
         sessionId?: string,
     ): Promise<{ type: 'question'; questions: Question[] } | { type: 'result' }> => {
         const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://cl-api.rookie.house';
-        const token = user?.apiToken;
+        // Prefer token from context; fall back to localStorage (in case of page refresh)
+        const token = user?.apiToken || localStorage.getItem('cl_access_token') || '';
         const res = await fetch(`${API_BASE}/api/onboarding`, {
             method: 'POST',
             headers: {
