@@ -16,6 +16,9 @@ const DIFF_COLORS: Record<string, { bg: string; border: string; font: string }> 
     advanced: { bg: '#fee2e2', border: '#f87171', font: '#7f1d1d' },
 };
 
+// Grayed-out style for fully completed nodes
+const DONE_COLORS = { bg: '#f1f5f9', border: '#cbd5e1', font: '#94a3b8' };
+
 function buildSpanTree(nodes: RoadmapGraph['nodes'], edges: RoadmapGraph['edges']): Set<string> {
     const adj: Record<string, string[]> = {};
     edges.forEach(e => { (adj[e.source] ||= []).push(e.target); });
@@ -40,10 +43,13 @@ export default function RoadmapGraph({
     graph,
     onNodeClick,
     selectedNodeId,
+    completedNodeIds,
 }: {
     graph: RoadmapGraph;
     onNodeClick: (node: RoadmapNode | null) => void;
     selectedNodeId?: string | null;
+    /** Set of node IDs where ALL resources are completed — these get grayed out */
+    completedNodeIds?: Set<string>;
 }) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const networkRef = useRef<any>(null);
@@ -74,16 +80,18 @@ export default function RoadmapGraph({
 
             const visNodes = new DataSet(
                 graph.nodes.map(n => {
-                    const col = DIFF_COLORS[n.difficulty] ?? DIFF_COLORS.beginner;
+                    const isDone = completedNodeIds?.has(n.id) ?? false;
+                    const col = isDone ? DONE_COLORS : (DIFF_COLORS[n.difficulty] ?? DIFF_COLORS.beginner);
                     const emoji = CATEGORY_EMOJI[n.category] ?? '📌';
+                    const donePrefix = isDone ? '✓ ' : '';
                     return {
                         id: n.id,
-                        label: `${emoji}  ${n.label}`,
+                        label: `${donePrefix}${emoji}  ${n.label}`,
                         color: {
                             background: col.bg,
                             border: col.border,
-                            highlight: { background: col.bg, border: '#6366f1' },
-                            hover: { background: col.bg, border: '#818cf8' },
+                            highlight: { background: col.bg, border: isDone ? '#94a3b8' : '#6366f1' },
+                            hover: { background: col.bg, border: isDone ? '#94a3b8' : '#818cf8' },
                         },
                         font: {
                             color: col.font,
@@ -93,10 +101,11 @@ export default function RoadmapGraph({
                         },
                         shape: 'box',
                         margin: { top: 13, bottom: 13, left: 20, right: 20 },
-                        borderWidth: 2,
+                        borderWidth: isDone ? 1 : 2,
                         borderWidthSelected: 3,
                         shapeProperties: { borderRadius: 10 },
-                        shadow: true,
+                        shadow: !isDone,
+                        opacity: isDone ? 0.6 : 1,
                         chosen: false,
                     };
                 }),
@@ -155,7 +164,6 @@ export default function RoadmapGraph({
 
             const net = new Network(containerRef.current, { nodes: visNodes, edges: visEdges }, options);
 
-            // Fit graph, then enforce minimum readable zoom
             const fitWithMinZoom = () => {
                 net.fit({ animation: false });
                 setTimeout(() => {
@@ -176,7 +184,7 @@ export default function RoadmapGraph({
             networkRef.current?.destroy();
             networkRef.current = null;
         };
-    }, [graph, handleClick]);
+    }, [graph, handleClick, completedNodeIds]);
 
     useEffect(() => {
         if (!networkRef.current || selectedNodeId === undefined) return;

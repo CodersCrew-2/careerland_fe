@@ -23,6 +23,14 @@ export default function RoadmapViewer({
     const totalCompleted = graph.nodes.reduce((sum, n) => sum + nodeCompleted(n.id), 0);
     const overallPercent = totalResources > 0 ? (totalCompleted / totalResources) * 100 : 0;
 
+    // nodes where every resource is done → gray out in graph
+    const completedNodeIds = new Set(
+        graph.nodes.filter(n => {
+            const total = n.resources?.length || 0;
+            return total > 0 && nodeCompleted(n.id) >= total;
+        }).map(n => n.id)
+    );
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#0f1117', borderRadius: 16, overflow: 'hidden' }}>
             {/* Header */}
@@ -126,7 +134,7 @@ export default function RoadmapViewer({
 
                 {/* Graph canvas */}
                 <div style={{ flex: 1, position: 'relative', minWidth: 0, overflow: 'hidden' }}>
-                    <RoadmapGraph graph={graph} onNodeClick={setSelectedNode} />
+                    <RoadmapGraph graph={graph} onNodeClick={setSelectedNode} completedNodeIds={completedNodeIds} />
                 </div>
             </div>
 

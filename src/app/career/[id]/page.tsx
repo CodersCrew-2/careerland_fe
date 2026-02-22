@@ -474,6 +474,24 @@ function RoadmapSection({ career }: { career: Career }) {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
+    // Load previously generated roadmap from localStorage
+    const storageKey = `career_roadmap_${career.id}`;
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (raw) setGraph(JSON.parse(raw));
+        } catch { /* ignore */ }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [storageKey]);
+
+    // completedNodeIds — nodes where every resource is done
+    const completedNodeIds = new Set(
+        (graph?.nodes ?? []).filter(n => {
+            const total = n.resources?.length || 0;
+            return total > 0 && nodeCompleted(n.id) >= total;
+        }).map(n => n.id)
+    );
+
     // Listen for fullscreen exit via Escape
     useEffect(() => {
         const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -513,6 +531,8 @@ function RoadmapSection({ career }: { career: Career }) {
             if (!res.ok) throw new Error((await res.text()) || `Error ${res.status}`);
             const data = await res.json() as ApiResponse;
             setGraph(data.graph);
+            // Persist roadmap so it survives page refresh
+            try { localStorage.setItem(storageKey, JSON.stringify(data.graph)); } catch { /* quota */ }
             setFormOpen(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Something went wrong');
@@ -687,6 +707,7 @@ function RoadmapSection({ career }: { career: Career }) {
                                 graph={graph}
                                 onNodeClick={setSelectedNode}
                                 selectedNodeId={selectedNode?.id}
+                                completedNodeIds={completedNodeIds}
                             />
                             <AnimatePresence>
                                 {selectedNode && (
