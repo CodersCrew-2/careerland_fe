@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
-// GET /api/auth/google — fetches OAuth URL from backend and redirects
-export async function GET(req: NextRequest) {
-    // Read at request time (not build time) so env vars are always current
+// GET /api/auth/google — fetches the Google OAuth URL from the backend and redirects the browser to it.
+// After the user authenticates with Google, the backend callback sets an httpOnly `accessToken` cookie
+// and redirects to our /auth/callback page, which calls /api/auth/me to get the user.
+export async function GET(_req: NextRequest) {
     const API_BASE =
         process.env.API_URL ||
         process.env.NEXT_PUBLIC_API_URL ||
@@ -12,16 +12,9 @@ export async function GET(req: NextRequest) {
         process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     try {
-        // Forward auth token from cookie if present
-        const cookieStore = await cookies();
-        const tokenFromCookie = cookieStore.get('cl_token')?.value;
-        const headers: Record<string, string> = {};
-        if (tokenFromCookie) headers['Authorization'] = `Bearer ${tokenFromCookie}`;
-
         const res = await fetch(`${API_BASE}/api/auth/google`, {
-            signal: AbortSignal.timeout(10000), // 10s — Cloudflare Worker cold starts can be slow
+            signal: AbortSignal.timeout(10000),
             cache: 'no-store',
-            headers,
         });
 
         if (!res.ok) {
@@ -36,10 +29,10 @@ export async function GET(req: NextRequest) {
             return NextResponse.redirect(`${APP_URL}/login?error=oauth_url_failed`);
         }
 
+        // Redirect the browser to Google OAuth — after auth, the backend redirects to /auth/callback
         return NextResponse.redirect(json.data.url);
     } catch (err) {
         console.error('[auth/google] Backend unreachable:', err);
         return NextResponse.redirect(`${APP_URL}/login?error=backend_offline`);
     }
 }
-

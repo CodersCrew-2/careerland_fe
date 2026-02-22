@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/components/context/AuthContext';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Loader2, Compass, Map, Star } from 'lucide-react';
 
@@ -39,79 +38,11 @@ function SignupContent() {
     const [loading, setLoading] = useState(false);
     const params = useSearchParams();
     const error = params.get('error');
-    const { login, signup } = useAuth();
-    const router = useRouter();
-    const popupRef = useRef<Window | null>(null);
-    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://cl-api.rookie.house';
-
-    // After popup closes or auth-success.html sends postMessage, verify auth with the backend
-    const finaliseAuth = useCallback(async () => {
-        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-        try {
-            const res = await fetch(`${API_BASE}/api/auth/me`, {
-                credentials: 'include',
-                cache: 'no-store',
-            });
-            if (!res.ok) { setLoading(false); return; }
-
-            const json = await res.json();
-            const user = json?.data?.user;
-            if (!user?.email) { setLoading(false); return; }
-
-            const isNew = !localStorage.getItem('careerland_user') ||
-                JSON.parse(localStorage.getItem('careerland_user') || '{}')?.email !== user.email;
-
-            if (isNew) {
-                signup(user.email, user.name || user.email.split('@')[0], undefined);
-                router.push('/onboarding');
-            } else {
-                login(user.email, undefined, user.name || undefined);
-                router.push('/dashboard');
-            }
-        } catch {
-            setLoading(false);
-        }
-    }, [API_BASE, login, signup, router]);
-
-    // Listen for postMessage from auth-success.html (fast path)
-    useEffect(() => {
-        const handler = (e: MessageEvent) => {
-            if (e.origin !== new URL(API_BASE).origin) return;
-            if (e.data?.type === 'AUTH_SUCCESS' || e.data?.type === 'CAREERLAND_AUTH' || e.data?.success) {
-                popupRef.current?.close();
-                finaliseAuth();
-            }
-        };
-        window.addEventListener('message', handler);
-        return () => window.removeEventListener('message', handler);
-    }, [API_BASE, finaliseAuth]);
 
     const handleGoogle = () => {
         setLoading(true);
-        const width = 500, height = 640;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        const popup = window.open(
-            '/api/auth/google',
-            'googleAuth',
-            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
-        );
-        popupRef.current = popup;
-
-        if (!popup) {
-            window.location.href = '/api/auth/google';
-            return;
-        }
-
-        pollRef.current = setInterval(() => {
-            if (popup.closed) {
-                clearInterval(pollRef.current!);
-                pollRef.current = null;
-                finaliseAuth();
-            }
-        }, 500);
+        // Full in-browser redirect — backend sets httpOnly cookie, then redirects to /auth/callback
+        window.location.href = '/api/auth/google';
     };
 
     return (

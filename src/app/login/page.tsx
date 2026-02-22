@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/components/context/AuthContext';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 
@@ -33,83 +32,11 @@ function LoginContent() {
     const [loading, setLoading] = useState(false);
     const params = useSearchParams();
     const error = params.get('error');
-    const { login, signup } = useAuth();
-    const router = useRouter();
-    const popupRef = useRef<Window | null>(null);
-    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://cl-api.rookie.house';
-
-    // After popup closes or auth-success.html sends postMessage, verify auth with the backend
-    const finaliseAuth = useCallback(async () => {
-        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-        try {
-            const res = await fetch(`${API_BASE}/api/auth/me`, {
-                credentials: 'include',   // sends the httpOnly accessToken cookie the backend set
-                cache: 'no-store',
-            });
-            if (!res.ok) { setLoading(false); return; } // not authenticated yet
-
-            const json = await res.json();
-            const user = json?.data?.user;
-            if (!user?.email) { setLoading(false); return; }
-
-            const isNew = !localStorage.getItem('careerland_user') ||
-                JSON.parse(localStorage.getItem('careerland_user') || '{}')?.email !== user.email;
-
-            // Store in auth context (sets cl_token cookie & localStorage)
-            if (isNew) {
-                signup(user.email, user.name || user.email.split('@')[0], undefined);
-                router.push('/onboarding');
-            } else {
-                login(user.email, undefined, user.name || undefined);
-                router.push('/dashboard');
-            }
-        } catch {
-            setLoading(false);
-        }
-    }, [API_BASE, login, signup, router]);
-
-    // Listen for postMessage from auth-success.html (fast path)
-    useEffect(() => {
-        const handler = (e: MessageEvent) => {
-            if (e.origin !== new URL(API_BASE).origin) return;
-            // Accept any success signal from the backend's auth-success page
-            if (e.data?.type === 'AUTH_SUCCESS' || e.data?.type === 'CAREERLAND_AUTH' || e.data?.success) {
-                popupRef.current?.close();
-                finaliseAuth();
-            }
-        };
-        window.addEventListener('message', handler);
-        return () => window.removeEventListener('message', handler);
-    }, [API_BASE, finaliseAuth]);
 
     const handleGoogle = () => {
         setLoading(true);
-        const width = 500, height = 640;
-        const left = window.screenX + (window.outerWidth - width) / 2;
-        const top = window.screenY + (window.outerHeight - height) / 2;
-        const popup = window.open(
-            '/api/auth/google',
-            'googleAuth',
-            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
-        );
-        popupRef.current = popup;
-
-        if (!popup) {
-            // Popup blocked: fall back to full-page redirect
-            window.location.href = '/api/auth/google';
-            return;
-        }
-
-        // Poll for popup closure — when auth-success.html closes the window, we verify auth
-        pollRef.current = setInterval(() => {
-            if (popup.closed) {
-                clearInterval(pollRef.current!);
-                pollRef.current = null;
-                finaliseAuth();
-            }
-        }, 500);
+        // Full in-browser redirect — backend sets httpOnly cookie, then redirects to /auth/callback
+        window.location.href = '/api/auth/google';
     };
 
     return (
@@ -161,7 +88,7 @@ function LoginContent() {
                     {error && (
                         <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12, padding: '10px 14px', fontSize: 12, color: '#c2410c', fontWeight: 500 }}>
                             {error === 'backend_offline'
-                                ? '⚠️ Backend server is offline. Start career-land-api first.'
+                                ? '⚠️ Backend server is offline. Please try again later.'
                                 : error === 'auth_failed'
                                     ? '⚠️ Google sign-in failed. Please try again.'
                                     : `⚠️ Error: ${error}`}
@@ -174,12 +101,12 @@ function LoginContent() {
                         className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-semibold text-[14px] text-slate-700 transition-all disabled:opacity-60"
                         style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0' }}>
                         {loading
-                            ? <><Loader2 className="w-4 h-4 animate-spin text-slate-400" /> Signing in…</>
+                            ? <><Loader2 className="w-4 h-4 animate-spin text-slate-400" /> Redirecting to Google…</>
                             : <><GoogleIcon /> Continue with Google</>}
                     </motion.button>
 
                     <p style={{ fontSize: 11, color: '#cbd5e1', textAlign: 'center', lineHeight: 1.6, margin: 0 }}>
-                        By continuing you agree to our Terms & Privacy Policy
+                        By continuing you agree to our Terms &amp; Privacy Policy
                     </p>
                 </div>
 

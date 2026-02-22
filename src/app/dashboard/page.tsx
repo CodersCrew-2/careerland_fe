@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useEffect, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/components/context/AuthContext';
 import { Activity, Star, TrendingUp, Calendar } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { useSearchParams, useRouter } from 'next/navigation';
 
 function StatsCard({ title, value, icon: Icon, gradient, iconBg }: { title: string; value: string; icon: any; gradient: string; iconBg: string }) {
     return (
@@ -36,37 +35,7 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
-    const { user, login } = useAuth();
-    const params = useSearchParams();
-    const router = useRouter();
-
-    // Consume OAuth callback params (token, email, name) after redirect from backend
-    useEffect(() => {
-        const token = params.get('token');
-        const email = params.get('email');
-        const name = params.get('name');
-        const isNewParam = params.get('new');
-
-        if (!token || !email) return;
-
-        // Set auth cookie so server-side API routes can read it
-        const expires = new Date(Date.now() + 7 * 864e5).toUTCString();
-        document.cookie = `cl_token=${encodeURIComponent(token)}; expires=${expires}; path=/; SameSite=Lax`;
-        document.cookie = `cl_user=${encodeURIComponent(JSON.stringify({ email, name }))}; expires=${expires}; path=/; SameSite=Lax`;
-
-        const existingUser = localStorage.getItem('careerland_user');
-        const existingParsed = existingUser ? JSON.parse(existingUser) : null;
-        const isReturning = existingParsed?.email === email;
-        login(email, token, name || undefined);
-
-        if (isNewParam === '0' || isReturning) {
-            router.replace('/dashboard');
-        } else {
-            router.replace('/onboarding');
-        }
-    }, [params]); // eslint-disable-line
-
-
+    const { user } = useAuth();
 
     return (
         <Layout>
