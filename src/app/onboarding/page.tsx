@@ -88,13 +88,12 @@ function OnboardingFlow() {
         query: string,
         sessionId?: string,
     ): Promise<{ type: 'question'; questions: Question[] } | { type: 'result' }> => {
-        const token = user?.apiToken;
-        const res = await fetch('/api/onboarding', {
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://cl-api.rookie.house';
+        // Call backend directly so the browser sends the httpOnly accessToken cookie automatically
+        const res = await fetch(`${API_BASE}/api/onboarding`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',   // browser auto-sends the httpOnly accessToken cookie
             body: JSON.stringify({ query, sessionId }),
         });
         if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -113,7 +112,7 @@ function OnboardingFlow() {
             return { type: 'result' };
         }
         throw new Error('Unknown response type from onboarding API');
-    }, [user?.apiToken, setOnboardingSessionId]);
+    }, [setOnboardingSessionId]);
 
     // ── After warmup, call API with name+age to kick off AI questions ──
     const startAIQuestions = useCallback(async (wa: Record<string, string | string[]>) => {

@@ -40,40 +40,29 @@ function DashboardContent() {
     const params = useSearchParams();
     const router = useRouter();
 
-    // Consume OAuth callback params (token, email, name) and log the user in
+    // Consume OAuth callback params (token, email, name) after redirect from backend
     useEffect(() => {
         const token = params.get('token');
         const email = params.get('email');
         const name = params.get('name');
         const isNewParam = params.get('new');
 
-        if (token && email) {
-            // Set auth cookie so server-side API routes can read it
-            const expires = new Date(Date.now() + 7 * 864e5).toUTCString();
-            document.cookie = `cl_token=${encodeURIComponent(token)}; expires=${expires}; path=/; SameSite=Lax`;
-            document.cookie = `cl_user=${encodeURIComponent(JSON.stringify({ email, name }))}; expires=${expires}; path=/; SameSite=Lax`;
+        if (!token || !email) return;
 
-            // ── Popup mode: send data to parent window and close ──
-            if (window.opener && !window.opener.closed) {
-                window.opener.postMessage(
-                    { type: 'CAREERLAND_AUTH', token, email, name, isNew: isNewParam },
-                    window.location.origin
-                );
-                window.close();
-                return;
-            }
+        // Set auth cookie so server-side API routes can read it
+        const expires = new Date(Date.now() + 7 * 864e5).toUTCString();
+        document.cookie = `cl_token=${encodeURIComponent(token)}; expires=${expires}; path=/; SameSite=Lax`;
+        document.cookie = `cl_user=${encodeURIComponent(JSON.stringify({ email, name }))}; expires=${expires}; path=/; SameSite=Lax`;
 
-            // ── Normal redirect mode (fallback) ──
-            const existingUser = localStorage.getItem('careerland_user');
-            const existingParsed = existingUser ? JSON.parse(existingUser) : null;
-            const isReturning = existingParsed?.email === email;
-            login(email, token, name || undefined);
+        const existingUser = localStorage.getItem('careerland_user');
+        const existingParsed = existingUser ? JSON.parse(existingUser) : null;
+        const isReturning = existingParsed?.email === email;
+        login(email, token, name || undefined);
 
-            if (isNewParam === '0' || isReturning) {
-                router.replace('/dashboard');
-            } else {
-                router.replace('/onboarding');
-            }
+        if (isNewParam === '0' || isReturning) {
+            router.replace('/dashboard');
+        } else {
+            router.replace('/onboarding');
         }
     }, [params]); // eslint-disable-line
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -33,35 +33,56 @@ function LoginContent() {
     const [loading, setLoading] = useState(false);
     const params = useSearchParams();
     const error = params.get('error');
-    const { login } = useAuth();
+    const { login, signup } = useAuth();
     const router = useRouter();
     const popupRef = useRef<Window | null>(null);
+    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // Listen for postMessage from the OAuth popup
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://cl-api.rookie.house';
+
+    // After popup closes or auth-success.html sends postMessage, verify auth with the backend
+    const finaliseAuth = useCallback(async () => {
+        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/me`, {
+                credentials: 'include',   // sends the httpOnly accessToken cookie the backend set
+                cache: 'no-store',
+            });
+            if (!res.ok) { setLoading(false); return; } // not authenticated yet
+
+            const json = await res.json();
+            const user = json?.data?.user;
+            if (!user?.email) { setLoading(false); return; }
+
+            const isNew = !localStorage.getItem('careerland_user') ||
+                JSON.parse(localStorage.getItem('careerland_user') || '{}')?.email !== user.email;
+
+            // Store in auth context (sets cl_token cookie & localStorage)
+            if (isNew) {
+                signup(user.email, user.name || user.email.split('@')[0], undefined);
+                router.push('/onboarding');
+            } else {
+                login(user.email, undefined, user.name || undefined);
+                router.push('/dashboard');
+            }
+        } catch {
+            setLoading(false);
+        }
+    }, [API_BASE, login, signup, router]);
+
+    // Listen for postMessage from auth-success.html (fast path)
     useEffect(() => {
         const handler = (e: MessageEvent) => {
-            if (e.origin !== window.location.origin) return;
-            if (e.data?.type !== 'CAREERLAND_AUTH') return;
-
-            const { token, email, name, isNew } = e.data;
-            if (!token || !email) return;
-
-            setLoading(false);
-            const existingUser = localStorage.getItem('careerland_user');
-            const existingParsed = existingUser ? JSON.parse(existingUser) : null;
-            const isReturning = existingParsed?.email === email;
-
-            login(email, token, name || undefined);
-
-            if (isNew === '0' || isReturning) {
-                router.push('/dashboard');
-            } else {
-                router.push('/onboarding');
+            if (e.origin !== new URL(API_BASE).origin) return;
+            // Accept any success signal from the backend's auth-success page
+            if (e.data?.type === 'AUTH_SUCCESS' || e.data?.type === 'CAREERLAND_AUTH' || e.data?.success) {
+                popupRef.current?.close();
+                finaliseAuth();
             }
         };
         window.addEventListener('message', handler);
         return () => window.removeEventListener('message', handler);
-    }, []); // eslint-disable-line
+    }, [API_BASE, finaliseAuth]);
 
     const handleGoogle = () => {
         setLoading(true);
@@ -75,17 +96,18 @@ function LoginContent() {
         );
         popupRef.current = popup;
 
-        // If popup was blocked, fall back to redirect
         if (!popup) {
+            // Popup blocked: fall back to full-page redirect
             window.location.href = '/api/auth/google';
             return;
         }
 
-        // Detect if popup was closed without completing auth
-        const pollClosed = setInterval(() => {
+        // Poll for popup closure — when auth-success.html closes the window, we verify auth
+        pollRef.current = setInterval(() => {
             if (popup.closed) {
-                clearInterval(pollClosed);
-                setLoading(false);
+                clearInterval(pollRef.current!);
+                pollRef.current = null;
+                finaliseAuth();
             }
         }, 500);
     };
