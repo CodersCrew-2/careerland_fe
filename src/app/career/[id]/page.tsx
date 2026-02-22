@@ -621,8 +621,60 @@ export default function CareerDetailPage() {
 function CareerDetailContent() {
     const params = useParams();
     const router = useRouter();
-    const career = CAREERS.find(c => c.id === Number(params.id));
+    const id = Number(params.id);
+    const staticCareer = CAREERS.find(c => c.id === id);
+
+    const [career, setCareer] = useState<Career | null>(staticCareer ?? null);
+    const [isLoading, setIsLoading] = useState(!staticCareer);
     const [saved, setSaved] = useState(false);
+
+    // Fallback: check localStorage for user-added AI careers
+    useEffect(() => {
+        if (staticCareer) { setIsLoading(false); return; }
+        try {
+            const raw = localStorage.getItem('user_added_careers');
+            if (raw) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const added: any[] = JSON.parse(raw);
+                const maxStaticId = Math.max(...CAREERS.map(c => c.id));
+                const idx = id - maxStaticId - 1;
+                if (Array.isArray(added) && idx >= 0 && added[idx]) {
+                    const ac = added[idx];
+                    const ytMatch = ac.youtube?.match?.(/(?:v=|\/embed\/|youtu\.be\/)([^&?#]+)/);
+                    setCareer({
+                        id,
+                        title: ac.name ?? 'Career',
+                        domain: 'tech',
+                        type: 'AI Suggested',
+                        emoji: '✨',
+                        salary: ac.overview?.annual_income ?? '',
+                        growth: ac.overview?.job_growth ?? '',
+                        time: ac.overview?.time_to_proficiency ?? '',
+                        tags: (ac.requirements || []).slice(0, 3),
+                        desc: ac.description ?? '',
+                        longDesc: ac.description ?? '',
+                        skills: (ac.requirements || []).slice(0, 4),
+                        requirements: ac.requirements || [],
+                        dayInLife: ['Complete the onboarding to get personalised day-in-the-life insights.'],
+                        youtubeId: ytMatch?.[1] ?? '',
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load career from localStorage:', e);
+        }
+        setIsLoading(false);
+    }, [id, staticCareer]);
+
+    if (isLoading) {
+        return (
+            <Layout>
+                <div className="flex items-center justify-center min-h-[40vh]">
+                    <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+                </div>
+            </Layout>
+        );
+    }
 
     if (!career) {
         return (
