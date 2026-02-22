@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/components/context/AuthContext';
 import { motion } from 'motion/react';
 import { Loader2, Compass, Map, Star } from 'lucide-react';
 
@@ -38,10 +39,59 @@ function SignupContent() {
     const [loading, setLoading] = useState(false);
     const params = useSearchParams();
     const error = params.get('error');
+    const { login } = useAuth();
+    const router = useRouter();
+    const popupRef = useRef<Window | null>(null);
+
+    // Listen for postMessage from the OAuth popup
+    useEffect(() => {
+        const handler = (e: MessageEvent) => {
+            if (e.origin !== window.location.origin) return;
+            if (e.data?.type !== 'CAREERLAND_AUTH') return;
+
+            const { token, email, name, isNew } = e.data;
+            if (!token || !email) return;
+
+            setLoading(false);
+            const existingUser = localStorage.getItem('careerland_user');
+            const existingParsed = existingUser ? JSON.parse(existingUser) : null;
+            const isReturning = existingParsed?.email === email;
+
+            login(email, token, name || undefined);
+
+            if (isNew === '0' || isReturning) {
+                router.push('/dashboard');
+            } else {
+                router.push('/onboarding');
+            }
+        };
+        window.addEventListener('message', handler);
+        return () => window.removeEventListener('message', handler);
+    }, []); // eslint-disable-line
 
     const handleGoogle = () => {
         setLoading(true);
-        window.location.href = '/api/auth/google';
+        const width = 500, height = 640;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        const popup = window.open(
+            '/api/auth/google',
+            'googleAuth',
+            `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
+        );
+        popupRef.current = popup;
+
+        if (!popup) {
+            window.location.href = '/api/auth/google';
+            return;
+        }
+
+        const pollClosed = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(pollClosed);
+                setLoading(false);
+            }
+        }, 500);
     };
 
     return (

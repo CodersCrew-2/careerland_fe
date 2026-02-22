@@ -45,17 +45,25 @@ function DashboardContent() {
         const token = params.get('token');
         const email = params.get('email');
         const name = params.get('name');
-        const isNewParam = params.get('new'); // '1' = new user, '0' = returning
+        const isNewParam = params.get('new');
 
         if (token && email) {
-            // Check if this user was already in localStorage (returning user)
+            // ── Popup mode: send data to parent window and close ──
+            if (window.opener && !window.opener.closed) {
+                window.opener.postMessage(
+                    { type: 'CAREERLAND_AUTH', token, email, name, isNew: isNewParam },
+                    window.location.origin
+                );
+                window.close();
+                return;
+            }
+
+            // ── Normal redirect mode (fallback) ──
             const existingUser = localStorage.getItem('careerland_user');
             const existingParsed = existingUser ? JSON.parse(existingUser) : null;
             const isReturning = existingParsed?.email === email;
-
             login(email, token, name || undefined);
 
-            // new=0 explicitly → dashboard; new=1 or brand new → onboarding
             if (isNewParam === '0' || isReturning) {
                 router.replace('/dashboard');
             } else {
@@ -63,6 +71,7 @@ function DashboardContent() {
             }
         }
     }, [params]); // eslint-disable-line
+
 
 
     return (
