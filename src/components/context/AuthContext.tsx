@@ -5,12 +5,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 interface User {
   email: string;
   name?: string;
+  apiToken?: string; // JWT from backend (received after Google OAuth callback)
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, _token?: string, name?: string) => void;
-  signup: (email: string, name?: string, _token?: string) => void;
+  login: (email: string, apiToken?: string, name?: string) => void;
+  signup: (email: string, name?: string, apiToken?: string) => void;
   logout: () => void;
   onboardingStep: number;
   setOnboardingStep: (step: number) => void;
@@ -34,16 +35,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedSession) setOnboardingSessionIdState(storedSession);
   }, []);
 
-  // Auth is handled by the backend's httpOnly `accessToken` cookie (on cl-api.rookie.house).
-  // We only store a lightweight user profile in localStorage for display purposes.
-  const login = (email: string, _token?: string, name?: string) => {
-    const newUser = { email, name: name || email.split('@')[0] };
+  const login = (email: string, apiToken?: string, name?: string) => {
+    const newUser = { email, name: name || email.split('@')[0], apiToken };
     setUser(newUser);
     localStorage.setItem('careerland_user', JSON.stringify(newUser));
   };
 
-  const signup = (email: string, name?: string, _token?: string) => {
-    const newUser = { email, name: name || email.split('@')[0] };
+  const signup = (email: string, name?: string, apiToken?: string) => {
+    const newUser = { email, name: name || email.split('@')[0], apiToken };
     setUser(newUser);
     localStorage.setItem('careerland_user', JSON.stringify(newUser));
     setOnboardingStepState(1);

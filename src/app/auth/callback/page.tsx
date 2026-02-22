@@ -1,58 +1,47 @@
 'use client';
 
 import { Suspense, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/context/AuthContext';
 import { Loader2 } from 'lucide-react';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://cl-api.rookie.house';
 
 function AuthCallbackContent() {
     const { login, signup } = useAuth();
     const router = useRouter();
+    const params = useSearchParams();
 
     useEffect(() => {
-        async function verifyAuth() {
-            try {
-                // The backend set an httpOnly `accessToken` cookie on its domain.
-                // Calling /api/auth/me with credentials:include sends that cookie automatically,
-                // giving us the logged-in user's info without needing a token in the URL.
-                const res = await fetch(`${API_BASE}/api/auth/me`, {
-                    credentials: 'include',
-                    cache: 'no-store',
-                });
+        const token = params.get('token');
 
-                if (!res.ok) {
-                    router.replace('/login?error=auth_failed');
-                    return;
-                }
-
-                const json = await res.json();
-                const user = json?.data?.user;
-
-                if (!user?.email) {
-                    router.replace('/login?error=auth_failed');
-                    return;
-                }
-
-                // Determine if this is a new user (hasn't logged in before on this device)
-                const stored = localStorage.getItem('careerland_user');
-                const storedEmail = stored ? JSON.parse(stored)?.email : null;
-                const isNew = storedEmail !== user.email;
-
-                if (isNew) {
-                    signup(user.email, user.name || user.email.split('@')[0]);
-                    router.replace('/onboarding');
-                } else {
-                    login(user.email, undefined, user.name || undefined);
-                    router.replace('/dashboard');
-                }
-            } catch {
-                router.replace('/login?error=auth_failed');
-            }
+        if (!token) {
+            // No token in URL — backend hasn't been updated yet
+            router.replace('/login?error=no_token');
+            return;
         }
 
-        verifyAuth();
+        // Decode user info from the JWT payload (it's a standard base64 JWT)
+        let email = '';
+        let name = '';
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            email = payload.email || payload.sub || '';
+            name = payload.name || payload.given_name || '';
+        } catch {
+            // Token might not be a JWT — that's fine, we just won't have user info yet
+        }
+
+        // Store the token in AuthContext (saved to localStorage for display)
+        const stored = localStorage.getItem('careerland_user');
+        const storedEmail = stored ? JSON.parse(stored)?.email : null;
+        const isNew = !storedEmail || storedEmail !== email;
+
+        if (isNew) {
+            signup(email || 'user', name || undefined, token);
+            router.replace('/onboarding');
+        } else {
+            login(email || storedEmail, token, name || undefined);
+            router.replace('/dashboard');
+        }
     }, []); // eslint-disable-line
 
     return (
