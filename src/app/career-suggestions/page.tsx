@@ -11,7 +11,7 @@ import {
     Sparkles, ArrowRight, IndianRupee, TrendingUp, Clock,
     Map, Maximize2, Minimize2, X, ExternalLink, BookOpen, Lock,
     Zap, Brain, Palette, Target, Trophy, FlaskConical, Briefcase,
-    Eye as EyeIcon, Play, ChevronRight, ArrowLeft, Loader2,
+    Eye as EyeIcon, Play, ChevronRight, ArrowLeft, Loader2, Bookmark,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────
@@ -53,12 +53,16 @@ const TYPE_COLORS: Record<string, string> = {
     podcast: '#fb923c', community: '#e879f9',
 };
 
-const CAREER_ACCENTS = [
-    { gradient: 'linear-gradient(135deg, #3b82f6, #6366f1)', glow: 'rgba(59,130,246,0.2)' },
-    { gradient: 'linear-gradient(135deg, #8b5cf6, #d946ef)', glow: 'rgba(139,92,246,0.2)' },
-    { gradient: 'linear-gradient(135deg, #06b6d4, #3b82f6)', glow: 'rgba(6,182,212,0.2)' },
-    { gradient: 'linear-gradient(135deg, #f59e0b, #ef4444)', glow: 'rgba(245,158,11,0.2)' },
-    { gradient: 'linear-gradient(135deg, #10b981, #06b6d4)', glow: 'rgba(16,185,129,0.2)' },
+// Curated Unsplash images for AI-suggested careers (fallback by index)
+const SUGGESTION_IMAGES = [
+    'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&h=400&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=400&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&h=400&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=600&h=400&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&h=400&fit=crop&q=80',
 ];
 
 // ─── Node Detail Panel ──────────────────────────────────────
@@ -152,11 +156,15 @@ function NodeDetail({ node, onClose }: { node: RoadmapNode; onClose: () => void 
     );
 }
 
-// ─── Career Option Card ─────────────────────────────────────
+// ─── Career Option Card (matches /careers page tile aesthetic) ───
 function CareerCard({ career, index, onExplore }: {
     career: CareerOption; index: number; onExplore: () => void;
 }) {
-    const accent = CAREER_ACCENTS[index % CAREER_ACCENTS.length];
+    const [saved, setSaved] = useState(false);
+    const img = SUGGESTION_IMAGES[index % SUGGESTION_IMAGES.length];
+
+    // Compute a pseudo match percentage from the index
+    const matchPct = Math.floor(78 + ((index * 7) % 18));
 
     // Extract YouTube video ID from URL
     const getYouTubeId = (url: string) => {
@@ -167,65 +175,94 @@ function CareerCard({ career, index, onExplore }: {
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            layout
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.08 }}
-            className="rounded-2xl overflow-hidden"
+            exit={{ opacity: 0, scale: 0.97 }}
+            whileHover={{ y: -3 }}
+            transition={{ duration: 0.22, delay: index * 0.05 }}
+            className="rounded-3xl overflow-hidden flex flex-col"
             style={{
                 background: '#ffffff',
-                border: '1px solid rgba(255,255,255,0.9)',
-                boxShadow: `0 4px 24px ${accent.glow}, 0 2px 8px rgba(0,0,0,0.04)`,
+                boxShadow: '0 2px 16px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)',
             }}
         >
-            {/* Accent bar */}
-            <div style={{ height: 4, background: accent.gradient }} />
+            {/* Image area */}
+            <div className="relative h-44 overflow-hidden shrink-0">
+                <img
+                    src={img}
+                    alt={career.name}
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0"
+                    style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 60%)' }} />
 
-            <div className="p-5 space-y-4">
-                {/* Title */}
-                <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white text-[14px] font-bold"
-                        style={{ background: accent.gradient }}>
-                        {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-[16px] font-bold text-slate-800 leading-snug">{career.name}</h3>
-                        <p className="text-[12px] text-slate-400 mt-1 leading-relaxed line-clamp-2">{career.description}</p>
-                    </div>
+                {/* Match badge */}
+                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-bold"
+                    style={{ background: 'rgba(255,255,255,0.95)', color: '#10b981', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
+                    ✦ {matchPct}% Match
                 </div>
 
-                {/* Overview stats */}
-                <div className="grid grid-cols-3 gap-2">
-                    {[
-                        { icon: IndianRupee, label: 'Income', val: career.overview.annual_income, color: '#10b981', bg: '#f0fdf4' },
-                        { icon: TrendingUp, label: 'Growth', val: career.overview.job_growth, color: '#3b82f6', bg: '#eff6ff' },
-                        { icon: Clock, label: 'Timeline', val: career.overview.time_to_proficiency, color: '#f59e0b', bg: '#fffbeb' },
-                    ].map(({ icon: Icon, label, val, color, bg }) => (
-                        <div key={label} className="p-2.5 rounded-xl text-center" style={{ background: bg }}>
-                            <Icon className="w-3.5 h-3.5 mx-auto mb-1" style={{ color }} />
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
-                            <p className="text-[11px] font-semibold text-slate-700 mt-0.5 leading-snug line-clamp-2">{val}</p>
-                        </div>
+                {/* Save button */}
+                <button onClick={e => { e.preventDefault(); setSaved(s => !s); }}
+                    className="absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all"
+                    style={{ background: saved ? '#3b82f6' : 'rgba(255,255,255,0.9)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
+                    <Bookmark className="w-3.5 h-3.5" style={{ color: saved ? '#fff' : '#94a3b8', fill: saved ? '#fff' : 'none' }} />
+                </button>
+
+                {/* Type pill on image */}
+                <div className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                    style={{ background: 'rgba(0,0,0,0.45)', color: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)' }}>
+                    AI Suggested
+                </div>
+            </div>
+
+            {/* Card body */}
+            <div className="p-4 flex-1 flex flex-col gap-2.5">
+                <div>
+                    <h3 className="font-bold text-slate-800 text-[15px] leading-snug">{career.name}</h3>
+                    <p className="text-[12px] text-slate-400 leading-snug mt-0.5 line-clamp-2">{career.description}</p>
+                </div>
+
+                {/* Stats row */}
+                <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                    <span className="flex items-center gap-1"><IndianRupee className="w-3 h-3" />{career.overview.annual_income}</span>
+                    <span className="w-0.5 h-3 rounded-full bg-slate-100" />
+                    <span className="flex items-center gap-1"><TrendingUp className="w-3 h-3 text-green-400" />{career.overview.job_growth}</span>
+                    <span className="w-0.5 h-3 rounded-full bg-slate-100" />
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{career.overview.time_to_proficiency}</span>
+                </div>
+
+                {/* Tags (from requirements) */}
+                <div className="flex flex-wrap gap-1">
+                    {career.requirements.slice(0, 3).map(t => (
+                        <span key={t} className="text-[10px] px-2 py-0.5 rounded-md bg-slate-50 text-slate-500 font-medium border border-slate-100">{t}</span>
                     ))}
                 </div>
+            </div>
 
-                {/* Requirements */}
-                <div>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Requirements</p>
-                    <div className="space-y-1">
-                        {career.requirements.slice(0, 3).map((r, i) => (
-                            <div key={i} className="flex items-start gap-2 text-[11px] text-slate-600">
-                                <span className="w-4 h-4 rounded-md bg-slate-100 flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-bold text-slate-400">{i + 1}</span>
-                                <span className="leading-relaxed">{r}</span>
-                            </div>
-                        ))}
-                        {career.requirements.length > 3 && (
-                            <p className="text-[10px] text-slate-300 ml-6">+{career.requirements.length - 3} more</p>
-                        )}
-                    </div>
-                </div>
+            {/* Footer */}
+            <div className="px-4 pb-4 flex gap-2">
+                <button onClick={e => { e.preventDefault(); setSaved(s => !s); }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[12px] font-semibold transition-all shrink-0"
+                    style={saved
+                        ? { borderColor: '#bfdbfe', color: '#3b82f6', background: '#eff6ff' }
+                        : { borderColor: '#e2e8f0', color: '#94a3b8', background: '#f8fafc' }}>
+                    <Bookmark className="w-3.5 h-3.5" style={{ fill: saved ? 'currentColor' : 'none' }} />
+                    {saved ? 'Saved' : 'Save'}
+                </button>
+                <button
+                    onClick={onExplore}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[12px] font-semibold transition-colors">
+                    Explore
+                    <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+            </div>
 
-                {/* YouTube embed or link */}
-                {ytId ? (
+            {/* YouTube embed below card if available */}
+            {ytId && (
+                <div className="px-4 pb-4">
                     <div className="rounded-xl overflow-hidden aspect-video">
                         <iframe
                             src={`https://www.youtube.com/embed/${ytId}`}
@@ -235,24 +272,8 @@ function CareerCard({ career, index, onExplore }: {
                             allowFullScreen
                         />
                     </div>
-                ) : career.youtube ? (
-                    <a href={career.youtube} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-[12px] font-medium text-slate-600 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all">
-                        <Play className="w-3.5 h-3.5 text-red-400" />
-                        Watch: Day in the Life
-                        <ExternalLink className="w-3 h-3 ml-auto text-slate-300" />
-                    </a>
-                ) : null}
-
-                {/* Explore button */}
-                <button
-                    onClick={onExplore}
-                    className="w-full py-3 rounded-xl text-white text-[13px] font-bold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                    style={{ background: accent.gradient, boxShadow: `0 4px 16px ${accent.glow}` }}
-                >
-                    Explore Career <ArrowRight className="w-4 h-4" />
-                </button>
-            </div>
+                </div>
+            )}
         </motion.div>
     );
 }
@@ -451,7 +472,7 @@ function CareerSuggestionsContent() {
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -12 }}
-                            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+                            className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"
                         >
                             {careers.map((career, i) => (
                                 <CareerCard
