@@ -104,15 +104,23 @@ function OnboardingFlow() {
         const json = await res.json();
         if (!json.success) throw new Error(json.error || 'API error');
 
-        const { response, sessionId: newSessionId } = json.data;
+        const { response, careers, sessionId: newSessionId } = json.data;
         if (newSessionId) setOnboardingSessionId(newSessionId);
 
+        // Type 1: question response → { type: "question", data: { questions } }
         if (response?.type === 'question') {
             return { type: 'question', questions: response.data?.questions ?? [] };
         }
-        // type: "result" → roadmap generated, save it
-        if (response?.type === 'result' || response?.nodes) {
-            localStorage.setItem('onboarding_roadmap', JSON.stringify(response.data ?? response));
+
+        // Type 2: result response → { graph: { title, nodes, edges } } + careers[] as sibling
+        // Note: the result response has NO `type` field — it has `graph` directly
+        if (response?.graph || response?.type === 'result' || response?.nodes) {
+            // Save the roadmap graph
+            localStorage.setItem('onboarding_roadmap', JSON.stringify(response.graph ?? response.data ?? response));
+            // Save the career options (sibling of response in data)
+            if (careers && Array.isArray(careers)) {
+                localStorage.setItem('onboarding_careers', JSON.stringify(careers));
+            }
             return { type: 'result' };
         }
         throw new Error('Unknown response type from onboarding API');
@@ -174,7 +182,8 @@ function OnboardingFlow() {
 
     const finishAll = () => {
         setOnboardingStep(2);
-        setTimeout(() => setPhase('choice'), 2200);
+        // Show thank-you briefly, then redirect to AI-generated career suggestions
+        setTimeout(() => router.push('/career-suggestions'), 2500);
     };
 
     const handleChoice = (path: string) => {

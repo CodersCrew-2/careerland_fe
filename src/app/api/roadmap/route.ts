@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json(data, { status: upstream.status });
         }
 
-        return NextResponse.json(data);
+        return NextResponse.json(data.data.response);
     } catch (err) {
         console.error('[roadmap proxy]', err);
         return NextResponse.json(

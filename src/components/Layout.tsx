@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Compass, User, Settings, LogOut, Menu, Briefcase, Bell, ChevronLeft, ChevronRight, X, MessageSquare } from 'lucide-react';
+import { Home, Compass, User, Settings, LogOut, Menu, Briefcase, Bell, ChevronLeft, ChevronRight, X, MessageSquare, Sparkles } from 'lucide-react';
 import { useAuth } from '@/components/context/AuthContext';
 import { cn } from '@/components/lib/utils';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { name: 'Dashboard', icon: Home, path: '/dashboard' },
+    { name: 'My Results', icon: Sparkles, path: '/career-suggestions' },
     { name: 'Careers', icon: Briefcase, path: '/careers' },
     { name: 'Forums', icon: MessageSquare, path: '/forums' },
     { name: 'Profile', icon: User, path: '/profile' },
