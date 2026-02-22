@@ -11,7 +11,7 @@ import {
     Sparkles, ArrowRight, IndianRupee, TrendingUp, Clock,
     Map, Maximize2, Minimize2, X, ExternalLink, BookOpen, Lock,
     Zap, Brain, Palette, Target, Trophy, FlaskConical, Briefcase,
-    Eye as EyeIcon, Play, ChevronRight, ArrowLeft, Loader2, Bookmark,
+    Eye as EyeIcon, Play, ChevronRight, ArrowLeft, Loader2, Plus, CheckCircle2,
 } from 'lucide-react';
 
 // ─── Types ───────────────────────────────────────────────────
@@ -156,22 +156,43 @@ function NodeDetail({ node, onClose }: { node: RoadmapNode; onClose: () => void 
     );
 }
 
+// helper: check if a career is already added to "My Careers"
+function isInMyCareers(name: string): boolean {
+    try {
+        const raw = localStorage.getItem('user_added_careers');
+        const existing: CareerOption[] = raw ? JSON.parse(raw) : [];
+        return existing.some(c => c.name === name);
+    } catch { return false; }
+}
+
+// helper: add a career to the user's "My Careers" list
+function addToMyCareers(career: CareerOption): boolean {
+    try {
+        const raw = localStorage.getItem('user_added_careers');
+        const existing: CareerOption[] = raw ? JSON.parse(raw) : [];
+        if (!existing.some(c => c.name === career.name)) {
+            existing.push(career);
+            localStorage.setItem('user_added_careers', JSON.stringify(existing));
+        }
+        return true;
+    } catch { return false; }
+}
+
 // ─── Career Option Card (matches /careers page tile aesthetic) ───
 function CareerCard({ career, index, onExplore }: {
     career: CareerOption; index: number; onExplore: () => void;
 }) {
-    const [saved, setSaved] = useState(false);
+    const [added, setAdded] = useState(() => isInMyCareers(career.name));
     const img = SUGGESTION_IMAGES[index % SUGGESTION_IMAGES.length];
 
     // Compute a pseudo match percentage from the index
     const matchPct = Math.floor(78 + ((index * 7) % 18));
 
-    // Extract YouTube video ID from URL
-    const getYouTubeId = (url: string) => {
-        const match = url.match(/(?:v=|\/embed\/|youtu\.be\/)([^&?#]+)/);
-        return match?.[1] ?? null;
+    const handleAdd = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (addToMyCareers(career)) setAdded(true);
     };
-    const ytId = getYouTubeId(career.youtube);
 
     return (
         <motion.div
@@ -203,13 +224,6 @@ function CareerCard({ career, index, onExplore }: {
                     style={{ background: 'rgba(255,255,255,0.95)', color: '#10b981', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
                     ✦ {matchPct}% Match
                 </div>
-
-                {/* Save button */}
-                <button onClick={e => { e.preventDefault(); setSaved(s => !s); }}
-                    className="absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center transition-all"
-                    style={{ background: saved ? '#3b82f6' : 'rgba(255,255,255,0.9)', boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}>
-                    <Bookmark className="w-3.5 h-3.5" style={{ color: saved ? '#fff' : '#94a3b8', fill: saved ? '#fff' : 'none' }} />
-                </button>
 
                 {/* Type pill on image */}
                 <div className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-semibold"
@@ -244,13 +258,14 @@ function CareerCard({ career, index, onExplore }: {
 
             {/* Footer */}
             <div className="px-4 pb-4 flex gap-2">
-                <button onClick={e => { e.preventDefault(); setSaved(s => !s); }}
+                <button onClick={handleAdd}
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[12px] font-semibold transition-all shrink-0"
-                    style={saved
-                        ? { borderColor: '#bfdbfe', color: '#3b82f6', background: '#eff6ff' }
-                        : { borderColor: '#e2e8f0', color: '#94a3b8', background: '#f8fafc' }}>
-                    <Bookmark className="w-3.5 h-3.5" style={{ fill: saved ? 'currentColor' : 'none' }} />
-                    {saved ? 'Saved' : 'Save'}
+                    style={added
+                        ? { borderColor: '#bbf7d0', color: '#16a34a', background: '#f0fdf4' }
+                        : { borderColor: '#bfdbfe', color: '#3b82f6', background: '#eff6ff' }}>
+                    {added
+                        ? <><CheckCircle2 className="w-3.5 h-3.5" /> Added</>
+                        : <><Plus className="w-3.5 h-3.5" /> Add To Career</>}
                 </button>
                 <button
                     onClick={onExplore}
@@ -259,21 +274,6 @@ function CareerCard({ career, index, onExplore }: {
                     <ArrowRight className="w-3.5 h-3.5" />
                 </button>
             </div>
-
-            {/* YouTube embed below card if available */}
-            {ytId && (
-                <div className="px-4 pb-4">
-                    <div className="rounded-xl overflow-hidden aspect-video">
-                        <iframe
-                            src={`https://www.youtube.com/embed/${ytId}`}
-                            title={`${career.name} day in the life`}
-                            className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                        />
-                    </div>
-                </div>
-            )}
         </motion.div>
     );
 }
@@ -480,8 +480,7 @@ function CareerSuggestionsContent() {
                                     career={career}
                                     index={i}
                                     onExplore={() => {
-                                        // Search for a matching career in static data, or just go to careers page
-                                        router.push('/careers');
+                                        router.push(`/career-suggestions/${i}`);
                                     }}
                                 />
                             ))}

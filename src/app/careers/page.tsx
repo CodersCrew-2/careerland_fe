@@ -117,15 +117,70 @@ export default function CareersPage() {
     return <ProtectedRoute><CareersContent /></ProtectedRoute>;
 }
 
+// Shape for user-added AI careers from localStorage
+interface AddedCareer {
+    name: string;
+    description: string;
+    overview: { annual_income: string; job_growth: string; time_to_proficiency: string };
+    requirements: string[];
+    youtube: string;
+}
+
+// Convert an AddedCareer → Career shape so it can share the same CareerCard
+function toStaticCareer(ac: AddedCareer, baseId: number): Career {
+    return {
+        id: baseId,
+        title: ac.name,
+        domain: 'tech',
+        type: 'AI Suggested',
+        emoji: '✨',
+        salary: ac.overview.annual_income,
+        growth: ac.overview.job_growth,
+        time: ac.overview.time_to_proficiency,
+        tags: ac.requirements.slice(0, 3),
+        desc: ac.description,
+        longDesc: ac.description,
+        skills: ac.requirements.slice(0, 4),
+        requirements: ac.requirements,
+        dayInLife: ['Explore this career to learn more about a typical day.'],
+        youtubeId: (() => {
+            const m = ac.youtube?.match?.(/(?:v=|\/embed\/|youtu\.be\/)([^&?#]+)/);
+            return m?.[1] ?? '';
+        })(),
+    };
+}
+
 function CareersContent() {
     const [tab, setTab] = useState<'all' | 'saved'>('all');
     const [saved, setSaved] = useState<number[]>([]);
     const [search, setSearch] = useState('');
+    const [allCareers, setAllCareers] = useState<Career[]>(CAREERS);
+
+    // On mount, load user-added careers from localStorage and merge
+    React.useEffect(() => {
+        try {
+            const raw = localStorage.getItem('user_added_careers');
+            if (raw) {
+                const added: AddedCareer[] = JSON.parse(raw);
+                if (Array.isArray(added) && added.length > 0) {
+                    const maxStaticId = Math.max(...CAREERS.map(c => c.id));
+                    const converted = added
+                        .filter(ac => !CAREERS.some(sc => sc.title.toLowerCase() === ac.name.toLowerCase()))
+                        .map((ac, i) => toStaticCareer(ac, maxStaticId + 1 + i));
+                    if (converted.length > 0) {
+                        setAllCareers([...CAREERS, ...converted]);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Failed to load user-added careers:', e);
+        }
+    }, []);
 
     const toggleSave = (id: number) =>
         setSaved(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
-    const base = tab === 'saved' ? CAREERS.filter(c => saved.includes(c.id)) : CAREERS;
+    const base = tab === 'saved' ? allCareers.filter(c => saved.includes(c.id)) : allCareers;
     const displayed = base.filter(c =>
         !search || c.title.toLowerCase().includes(search.toLowerCase()) || c.desc.toLowerCase().includes(search.toLowerCase())
     );
