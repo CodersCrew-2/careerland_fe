@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
         const res = await fetch(`${API_BASE}/api/auth/google`, {
             signal: AbortSignal.timeout(10000), // 10s — Cloudflare Worker cold starts can be slow
             cache: 'no-store',
+            credentials: 'include',
         });
 
         if (!res.ok) {

@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
                 Authorization: authHeader,
             },
             body: JSON.stringify({ query, sessionId }),
+            credentials: 'include',
         });
 
         const data = await res.json();
