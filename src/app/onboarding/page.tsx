@@ -48,8 +48,24 @@ function getImg(kw?: string) {
     return KEYWORD_IMGS[kw.toLowerCase()] ?? KEYWORD_IMGS.default;
 }
 
+// ─── Static warm-up questions (no API needed) ────────────────
+const WARMUP_QUESTIONS: Question[] = [
+    {
+        id: 'name',
+        text: 'What should I call you?',
+        input_type: 'text',
+        required: true,
+    },
+    {
+        id: 'age',
+        text: 'How old are you?',
+        input_type: 'number',
+        required: true,
+    },
+];
+
 // ─── Phases ──────────────────────────────────────────────────
-type Phase = 'welcome' | 'questions' | 'thankyou' | 'choice';
+type Phase = 'welcome' | 'warmup' | 'questions' | 'thankyou' | 'choice';
 
 export default function OnboardingPage() {
     return <ProtectedRoute><OnboardingFlow /></ProtectedRoute>;
@@ -57,30 +73,104 @@ export default function OnboardingPage() {
 
 function OnboardingFlow() {
     const [phase, setPhase] = useState<Phase>('welcome');
+    // warmup answers (name/age)
+    const [warmupAnswers, setWarmupAnswers] = useState<Record<string, string | string[]>>({});
+    // API-returned questions
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loadingQ, setLoadingQ] = useState(false);
-    const { user, setOnboardingStep } = useAuth();
+    const [error, setError] = useState<string | null>(null);
+
+    const { user, setOnboardingStep, onboardingSessionId, setOnboardingSessionId } = useAuth();
     const router = useRouter();
 
-    // On mount: load questions in background while user sees welcome
-    useEffect(() => {
+    // ── Call API with a query string, returns {questions} or signals "done" ──
+    const callOnboardingAPI = useCallback(async (
+        query: string,
+        sessionId?: string,
+    ): Promise<{ type: 'question'; questions: Question[] } | { type: 'result' }> => {
+        const token = user?.apiToken;
+        const res = await fetch('/api/onboarding', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ query, sessionId }),
+        });
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error || 'API error');
+
+        const { response, sessionId: newSessionId } = json.data;
+        if (newSessionId) setOnboardingSessionId(newSessionId);
+
+        if (response?.type === 'question') {
+            return { type: 'question', questions: response.data?.questions ?? [] };
+        }
+        // type: "result" → roadmap generated, save it
+        if (response?.type === 'result' || response?.nodes) {
+            localStorage.setItem('onboarding_roadmap', JSON.stringify(response.data ?? response));
+            return { type: 'result' };
+        }
+        throw new Error('Unknown response type from onboarding API');
+    }, [user?.apiToken, setOnboardingSessionId]);
+
+    // ── After warmup, call API with name+age to kick off AI questions ──
+    const startAIQuestions = useCallback(async (wa: Record<string, string | string[]>) => {
         setLoadingQ(true);
-        fetch('/api/onboarding-questions')
-            .then(r => r.json())
-            .then(data => { setQuestions(data); setLoadingQ(false); })
-            .catch(() => setLoadingQ(false));
-    }, []);
+        setError(null);
+        try {
+            const openingQuery = `My name is ${wa.name || 'a user'} and I am ${wa.age || '18'} years old. Please help me discover my ideal career path.`;
+            const result = await callOnboardingAPI(openingQuery, onboardingSessionId ?? undefined);
+            if (result.type === 'question') {
+                setQuestions(result.questions);
+                setPhase('questions');
+            } else {
+                // Unlikely on first turn, but handle it
+                finishAll();
+            }
+        } catch (e: any) {
+            setError(e.message ?? 'Something went wrong. Please try again.');
+            setPhase('warmup'); // stay on warmup so user can retry
+        } finally {
+            setLoadingQ(false);
+        }
+    }, [callOnboardingAPI, onboardingSessionId]);
 
-    const startQuestions = () => {
-        setPhase('questions');
-    };
+    // ── After each batch of AI questions is answered, send them & get more ──
+    const handleQuestionsAnswered = useCallback(async (answers: Record<string, string | string[]>) => {
+        // Save partial answers
+        const existing = JSON.parse(localStorage.getItem('onboarding_answers') || '{}');
+        localStorage.setItem('onboarding_answers', JSON.stringify({ ...existing, ...answers }));
 
-    const finishQuestions = (answers: Record<string, string | string[]>) => {
-        // Save answers
-        localStorage.setItem('onboarding_answers', JSON.stringify(answers));
+        setLoadingQ(true);
+        setError(null);
+        setPhase('thankyou'); // show thankyou while loading
+
+        try {
+            // Format answers as natural language string
+            const queryParts = Object.entries(answers).map(
+                ([key, val]) => `${key.replace(/_/g, ' ')}: ${Array.isArray(val) ? val.join(', ') : val}`
+            );
+            const query = queryParts.join('. ');
+
+            const result = await callOnboardingAPI(query, onboardingSessionId ?? undefined);
+            if (result.type === 'question' && result.questions.length > 0) {
+                setQuestions(result.questions);
+                setPhase('questions');
+            } else {
+                finishAll();
+            }
+        } catch (e: any) {
+            setError(e.message ?? 'Something went wrong.');
+            setPhase('choice'); // fallback to choice phase
+        } finally {
+            setLoadingQ(false);
+        }
+    }, [callOnboardingAPI, onboardingSessionId]);
+
+    const finishAll = () => {
         setOnboardingStep(2);
-        setPhase('thankyou');
-        // Auto-advance to choice after 2s
         setTimeout(() => setPhase('choice'), 2200);
     };
 
@@ -102,12 +192,33 @@ function OnboardingFlow() {
             <div className="absolute bottom-[-8%] right-[-8%] w-[420px] h-[420px] rounded-full pointer-events-none"
                 style={{ background: 'radial-gradient(circle, rgba(56,195,245,0.10) 0%, transparent 70%)', filter: 'blur(72px)' }} />
 
+            {/* Error toast */}
+            <AnimatePresence>
+                {error && (
+                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                        className="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-[13px] font-semibold"
+                        style={{ background: '#fef2f2', border: '1px solid #fca5a5', color: '#dc2626', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+                        ⚠️ {error}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <AnimatePresence mode="wait">
                 {phase === 'welcome' && (
-                    <WelcomePhase key="welcome" userName={user?.name} onContinue={startQuestions} loadingQ={loadingQ} />
+                    <WelcomePhase key="welcome" userName={user?.name}
+                        onContinue={() => setPhase('warmup')} loadingQ={false} />
+                )}
+                {phase === 'warmup' && (
+                    <QuestionsPhase key="warmup"
+                        questions={WARMUP_QUESTIONS}
+                        onFinish={(wa) => { setWarmupAnswers(wa); startAIQuestions(wa); }}
+                        loadingSubmit={loadingQ} />
                 )}
                 {phase === 'questions' && questions.length > 0 && (
-                    <QuestionsPhase key="questions" questions={questions} onFinish={finishQuestions} />
+                    <QuestionsPhase key={`q-${questions[0]?.id}`}
+                        questions={questions}
+                        onFinish={handleQuestionsAnswered}
+                        loadingSubmit={loadingQ} />
                 )}
                 {phase === 'questions' && questions.length === 0 && (
                     <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -117,7 +228,7 @@ function OnboardingFlow() {
                     </motion.div>
                 )}
                 {phase === 'thankyou' && (
-                    <ThankYouPhase key="thankyou" />
+                    <ThankYouPhase key="thankyou" loading={loadingQ} />
                 )}
                 {phase === 'choice' && (
                     <ChoicePhase key="choice" onChoice={handleChoice} />
@@ -126,6 +237,7 @@ function OnboardingFlow() {
         </div>
     );
 }
+
 
 // ─── Reusable video component ────────────────────────────────
 function BuddyVideo({ src, className }: { src: string; className?: string }) {
@@ -272,7 +384,11 @@ function WelcomePhase({ userName, onContinue, loadingQ }: { userName?: string; o
 // ─── Phase 2: Questions ─ Duolingo-style layout ───────────────
 const THINKING_GIF = 'https://uafn22926g.ufs.sh/f/F8enbsMKbqz7wGLv60fSKh0RHXxWkbs1TyYLNaoDze9PuVpt';
 
-function QuestionsPhase({ questions, onFinish }: { questions: Question[]; onFinish: (a: Record<string, string | string[]>) => void }) {
+function QuestionsPhase({ questions, onFinish, loadingSubmit = false }: {
+    questions: Question[];
+    onFinish: (a: Record<string, string | string[]>) => void;
+    loadingSubmit?: boolean;
+}) {
     const [idx, setIdx] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
     const [dir, setDir] = useState<1 | -1>(1);
@@ -410,7 +526,11 @@ function QuestionsPhase({ questions, onFinish }: { questions: Question[]; onFini
                             outline: 'none',
                             transition: 'background 0.18s',
                         }}>
-                        {isLast ? 'Finish ✓' : 'Continue'}
+                        {isLast
+                            ? (loadingSubmit
+                                ? <><Loader2 className="w-4 h-4 animate-spin" /> Analysing…</>
+                                : 'Finish ✓')
+                            : 'Continue'}
                     </motion.button>
                 </div>
             </div>
@@ -516,7 +636,7 @@ function QuestionInput({ q, value, onChange, toggleMulti }: {
 }
 
 // ─── Phase 3: Thank You ───────────────────────────────────────
-function ThankYouPhase() {
+function ThankYouPhase({ loading = false }: { loading?: boolean }) {
     return (
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
@@ -528,10 +648,13 @@ function ThankYouPhase() {
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                 className="space-y-2">
-                <h2 className="text-[22px] font-bold text-slate-800">Thank you for your time!</h2>
+                <h2 className="text-[22px] font-bold text-slate-800">
+                    {loading ? 'Analysing your answers…' : 'Thank you for your time!'}
+                </h2>
                 <p className="text-[14px] text-slate-500 leading-relaxed">
-                    I'll evaluate the results for you.<br />
-                    In the meantime, let me know more about you.
+                    {loading
+                        ? 'Hang tight while I find your best career matches.'
+                        : <>I&apos;ll evaluate the results for you.<br />In the meantime, let me know more about you.</>}
                 </p>
             </motion.div>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}

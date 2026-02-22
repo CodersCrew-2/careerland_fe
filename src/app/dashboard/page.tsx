@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { useAuth } from '@/components/context/AuthContext';
 import { Activity, Star, TrendingUp, Calendar } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 function StatsCard({ title, value, icon: Icon, gradient, iconBg }: { title: string; value: string; icon: any; gradient: string; iconBg: string }) {
     return (
@@ -33,7 +34,21 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
-    const { user } = useAuth();
+    const { user, login } = useAuth();
+    const params = useSearchParams();
+    const router = useRouter();
+
+    // Consume OAuth callback params (token, email, name) and log the user in
+    useEffect(() => {
+        const token = params.get('token');
+        const email = params.get('email');
+        const name = params.get('name');
+        if (token && email) {
+            login(email, token, name || undefined);
+            // Clean URL
+            router.replace('/dashboard');
+        }
+    }, [params]); // eslint-disable-line
 
     return (
         <Layout>

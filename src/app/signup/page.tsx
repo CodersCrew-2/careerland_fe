@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/context/AuthContext';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Loader2, Compass, Map, Star } from 'lucide-react';
 
@@ -28,14 +27,12 @@ const features = [
 
 export default function Signup() {
     const [loading, setLoading] = useState(false);
-    const { signup } = useAuth();
-    const router = useRouter();
+    const params = useSearchParams();
+    const error = params.get('error');
 
-    const handleGoogle = async () => {
+    const handleGoogle = () => {
         setLoading(true);
-        await new Promise(r => setTimeout(r, 1400));
-        signup('user@gmail.com', 'Google User');
-        router.push('/onboarding');
+        window.location.href = '/api/auth/google';
     };
 
     return (
@@ -83,6 +80,16 @@ export default function Signup() {
                         <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0 }}>Create your account</h1>
                         <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>Your career journey starts here</p>
                     </div>
+
+                    {error && (
+                        <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12, padding: '10px 14px', fontSize: 12, color: '#c2410c', fontWeight: 500 }}>
+                            {error === 'backend_offline'
+                                ? '⚠️ Backend server is offline. Start career-land-api first.'
+                                : error === 'auth_failed'
+                                    ? '⚠️ Google sign-in failed. Please try again.'
+                                    : `⚠️ Error: ${error}`}
+                        </div>
+                    )}
 
                     {/* Feature bullets */}
                     <div className="space-y-2.5">

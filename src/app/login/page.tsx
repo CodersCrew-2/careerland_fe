@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/context/AuthContext';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 
@@ -22,14 +21,12 @@ function GoogleIcon() {
 
 export default function Login() {
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
-    const router = useRouter();
+    const params = useSearchParams();
+    const error = params.get('error');
 
-    const handleGoogle = async () => {
+    const handleGoogle = () => {
         setLoading(true);
-        await new Promise(r => setTimeout(r, 1400));
-        login('user@gmail.com');
-        router.push('/dashboard');
+        window.location.href = '/api/auth/google';
     };
 
     return (
@@ -77,6 +74,16 @@ export default function Login() {
                         <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0 }}>Welcome back</h1>
                         <p style={{ fontSize: 13, color: '#94a3b8', margin: 0 }}>Sign in to continue your journey</p>
                     </div>
+
+                    {error && (
+                        <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 12, padding: '10px 14px', fontSize: 12, color: '#c2410c', fontWeight: 500 }}>
+                            {error === 'backend_offline'
+                                ? '⚠️ Backend server is offline. Start career-land-api first.'
+                                : error === 'auth_failed'
+                                    ? '⚠️ Google sign-in failed. Please try again.'
+                                    : `⚠️ Error: ${error}`}
+                        </div>
+                    )}
 
                     <motion.button
                         whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.975 }}
