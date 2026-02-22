@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
 // GET /api/auth/google/callback?code=...
 // Called by Google after OAuth consent (when backend redirect_uri points here),
 // OR can also be called by the frontend if the backend itself redirects here.
 export async function GET(req: NextRequest) {
+    const API_BASE =
+        process.env.API_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        'https://cl-api.rookie.house';
+    const APP_URL =
+        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
     const code = req.nextUrl.searchParams.get('code');
+
 
     if (!code) {
         return NextResponse.redirect(`${APP_URL}/login?error=no_code`);
